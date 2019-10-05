@@ -1,14 +1,15 @@
 #include <stdio.h>
 #include <omp.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include <time.h>
-#include <math.h>
 #define MAXVAL 20
 
 int main(int argc, char *argv[]) {
     int n = atoi(argv[1]);
     int p = atoi(argv[2]);
     printf("n = %d\n", n);
-    printf("p = %d\n", p);
+    printf("p = %d\n\n", p);
 
     double *tt = malloc(sizeof (double) * n);
     srand(getpid());
