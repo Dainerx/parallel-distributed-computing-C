@@ -3,7 +3,7 @@
 
 ## Introduction
 
-This repoisotry contains different C implementations of algorithms done sequentially and in parallel to show the speed up, efficiency and cost for every scenario.
+This repository contains different C implementations of algorithms done sequentially and in parallel to show the speed up, efficiency and cost for every scenario.
 
 Most of the programs are launched with n and p as input.
 
