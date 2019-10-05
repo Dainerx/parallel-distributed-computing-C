@@ -40,7 +40,8 @@ int main(int argc, char *argv[]) {
     }
     end = clock();
     cpu_time_used_seq = ((double) (end - start)) / CLOCKS_PER_SEC;
-    printf("seq: for n=%d, time taken=%f\n", n, cpu_time_used_seq);
+    printf("\nNb.threads\tN\tTime\tSpeed up\n");
+    printf("1\t%d\t%f\tNA\n", n, cpu_time_used_seq);
     //end seq
 
 
@@ -62,12 +63,10 @@ int main(int argc, char *argv[]) {
     double end_parallel = omp_get_wtime();
     double cpu_time_used_parallel = (double) (end_parallel - start_parallel);
     //speed up ~ 3
-    printf("parallel: for n=%d, p=%d, time taken=%f, speedup=%f\n", n, p, cpu_time_used_parallel, cpu_time_used_seq / cpu_time_used_parallel);
+    printf("%d\t%d\t%f\t%f\n", p, n, cpu_time_used_parallel, cpu_time_used_seq / cpu_time_used_parallel);
 
 
     //now we will vary p from 2 to 16 in order to see how the speed varies along with the number of threads
-
-    printf("Started varying threads:\n");
     for (int pp = 2; pp < 17; pp++) {
         p = pp;
         int chunk = n / p; //acts like floor
@@ -86,7 +85,7 @@ int main(int argc, char *argv[]) {
         } //end parralel
         double end_parallel = omp_get_wtime();
         double cpu_time_used_parallel = (double) (end_parallel - start_parallel);
-        printf("parallel: for n=%d, p=%d, time taken=%f, speedup=%f\n", n, p, cpu_time_used_parallel, cpu_time_used_seq / cpu_time_used_parallel);
+        printf("%d\t%d\t%f\t%f\n", p, n, cpu_time_used_parallel, cpu_time_used_seq / cpu_time_used_parallel);
     }
     return 0;
 
