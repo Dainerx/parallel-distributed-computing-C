@@ -11,6 +11,7 @@ int main(int argc, char *argv[]) {
     printf("n = %d\n", n);
     printf("p = %d\n\n", p);
 
+    printf("\nNb.threads\tN\tSum\tTime\tSpeed up\tComment\n");
     double *tt = malloc(sizeof (double) * n);
     srand(getpid());
     //init array
@@ -29,11 +30,9 @@ int main(int argc, char *argv[]) {
     }
     end = clock();
     cpu_time_used_seq = ((double) (end - start)) / CLOCKS_PER_SEC;
-    printf("seq: sum=%f\n", sum);
-    printf("seq: for n=%d, time taken=%f\n", n, cpu_time_used_seq);
+    printf("%d\t%d\t%f\t%f\tNA\tNA\n", 1, n, sum, cpu_time_used_seq);
     //end seq
 
-    printf("\n======================================\nUsing Parallelism without reduction: \n");
     sum = 0;
     double lsum = 0;
     omp_set_num_threads(p);
@@ -58,10 +57,7 @@ int main(int argc, char *argv[]) {
     //end parallel without reduction
     double end_parallel = omp_get_wtime();
     double cpu_time_used_parallel = (double) (end_parallel - start_parallel);
-    printf("parallel without reduction: sum=%f\n", sum);
-    printf("parallel without reduction: for n=%d, p=%d, time taken=%f, speedup=%f\n", n, p, cpu_time_used_parallel, cpu_time_used_seq / cpu_time_used_parallel);
-
-    printf("\n======================================\nUsing Parallelism with reduction: \n");
+    printf("%d\t%d\t%f\t%f\t%f\tparallelism without reduction\n", p, n, sum, cpu_time_used_parallel, cpu_time_used_seq / cpu_time_used_parallel);
     sum = 0;
     //start parallel with reduction
     start_parallel = omp_get_wtime();
@@ -74,13 +70,11 @@ int main(int argc, char *argv[]) {
     //end parallel with reduction
     end_parallel = omp_get_wtime();
     cpu_time_used_parallel = (double) (end_parallel - start_parallel);
-    printf("parallel with reduction: sum=%f\n", sum);
-    printf("parallel with reduction: for n=%d, p=%d, time taken=%f, speedup=%f\n", n, p, cpu_time_used_parallel, cpu_time_used_seq / cpu_time_used_parallel);
+    printf("%d\t%d\t%f\t%f\t%f\tparallelism with reduction\n", p, n, sum, cpu_time_used_parallel, cpu_time_used_seq / cpu_time_used_parallel);
 
-    printf("\n======================================\nUsing schedule and reduction: \n");
     sum = 0;
     int chunk = n / (p * 2); //this is faster than the default scheduling by compiler. n/p would be slower though.
-    printf("Setting chunk to %d\n", chunk);
+    //printf("Setting chunk to %d\n", chunk);
     start_parallel = omp_get_wtime();
 #pragma omp parallel shared(chunk) private (i)
     {
@@ -91,15 +85,12 @@ int main(int argc, char *argv[]) {
     }
     end_parallel = omp_get_wtime();
     cpu_time_used_parallel = (double) (end_parallel - start_parallel);
-    printf("parallel with reduction and dynamic scheduling: sum=%f\n", sum);
-    printf("parallel with reduction and dynamic scheduling: for n=%d, p=%d, time taken=%f, speedup=%f\n", n, p, cpu_time_used_parallel, cpu_time_used_seq / cpu_time_used_parallel);
+    printf("%d\t%d\t%f\t%f\t%f\tparallelism dynamic schedule with reduction\n", p, n, sum, cpu_time_used_parallel, cpu_time_used_seq / cpu_time_used_parallel);
 
-
-    printf("\n======================================\nUsing schedule without reduction: \n");
     sum = 0;
     lsum = 0;
     chunk = n / (p * 2); //this is faster than the default scheduling by compiler. n/p would be slower though.
-    printf("Setting chunk to %d\n", chunk);
+    //printf("Setting chunk to %d\n", chunk);
     //should not be faster.
     start_parallel = omp_get_wtime();
 #pragma omp parallel shared(chunk) private (i,lsum)
@@ -113,7 +104,6 @@ int main(int argc, char *argv[]) {
     }
     end_parallel = omp_get_wtime();
     cpu_time_used_parallel = (double) (end_parallel - start_parallel);
-    printf("parallel dynamic scheduling without reduction: sum=%f\n", sum);
-    printf("parallel dynamic scheduling without reduction: for n=%d, p=%d, time taken=%f, speedup=%f\n", n, p, cpu_time_used_parallel, cpu_time_used_seq / cpu_time_used_parallel);
+    printf("%d\t%d\t%f\t%f\t%f\tparallelism dynamic schedule without reduction\n", p, n, sum, cpu_time_used_parallel, cpu_time_used_seq / cpu_time_used_parallel);
 
 }
