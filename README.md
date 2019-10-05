@@ -6,13 +6,14 @@
 This repoisotry contains different C implementations of algorithms done sequentially and in parallel to show the speed up, efficiency and cost for every scenario.
 
 Most of the programs are launched with n and p as input.
+
 **Where: n is the size of the input and p the number of threads to use.**
 
 Example, launch a program with n=10 and p=3:
 
 `./program 10 3`
 
-**Note: Some files varies the number of threads used within the code itself.**
+**Note: Some files vary the number of threads used within the code itself.**
 
 ## Requirements and Library
 
