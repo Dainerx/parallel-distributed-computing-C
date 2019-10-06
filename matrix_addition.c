@@ -24,14 +24,9 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
             a[i][j] = rand() % MAXVAL;
-        }
-    }
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
             b[i][j] = rand() % MAXVAL;
         }
     }
-
 
     //start seq
     clock_t start, end;
@@ -63,4 +58,14 @@ int main(int argc, char *argv[]) {
     double end_parallel = omp_get_wtime();
     double cpu_time_used_parallel = (double) (end_parallel - start_parallel);
     printf("parallel: for n=%d, p=%d, time taken=%f, speedup=%f\n", n, p, cpu_time_used_parallel, cpu_time_used_seq / cpu_time_used_parallel);
+    
+    for(int i=0; i<n; i++)
+    {
+        free(a[i]);
+        free(b[i]);
+        free(c[i]);
+    }
+    free(a);
+    free(b);
+    free(c);
 }
