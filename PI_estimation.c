@@ -15,7 +15,7 @@ double pi_parallel(int nb_threads, double a, double b, long int N) {
     double sum = 0.0;
     double xi, h = (b - a) / N;
 
-#pragma omp parallel for num_threads(nb_threads) reduction(+:sum) //parallel on number of threads given 
+#pragma omp parallel for num_threads(nb_threads) private(xi) reduction(+:sum) //parallel on number of threads given 
     for (i = 0; i < N; i++) {
         xi = a + h*i;
         sum += f(xi);
