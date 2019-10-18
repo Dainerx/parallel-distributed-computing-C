@@ -32,3 +32,22 @@ int main(int argc, char **argv)
     MPI_Finalize();
     return EXIT_SUCCESS;
 }
+
+
+
+/*
+        if (0 == rang)
+        {
+            MPI_Isend(&jeton,1, MPI_INT,neighbor,tag,MPI_COMM_WORLD,&send_request);
+            MPI_Irecv(&recu, 1, MPI_INT, neighbor, tag, MPI_COMM_WORLD, &recv_request);
+            MPI_Wait(&recv_request,&status);
+            printf("I recieved %d\n",recu);
+        }
+        else if (1 == rang)
+        {
+            MPI_Isend(&req_count,1, MPI_INT,neighbor,tag,MPI_COMM_WORLD,&send_request);
+            MPI_Irecv(&req_count, 1, MPI_INT, neighbor, tag, MPI_COMM_WORLD, &recv_request);
+            MPI_Wait(&recv_request,&status);
+            printf("Process %d, I recieved %d\n",rang,req_count);
+        }
+*/
