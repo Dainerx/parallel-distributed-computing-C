@@ -17,12 +17,9 @@ Hostfile contains the list of machine to distribute the execution between. The c
 
 An example of Hostfile in my school lab (lab_room_number-machine_number) comes as follow: 
 
-`
+```
 f205-14
-
 f205-15
-
 f205-16
-
 localhost
-`
+```
