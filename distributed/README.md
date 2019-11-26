@@ -23,3 +23,9 @@ f205-15
 f205-16
 localhost
 ```
+
+## Run
+
+To run any instance please use the command below.
+
+`mpiexec --hostfile ./hostfile_path -n 4 --xterm -1\! ./program`
