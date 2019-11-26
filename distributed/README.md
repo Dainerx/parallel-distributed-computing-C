@@ -9,7 +9,7 @@ This section contains different C implementations of algorithms done in [distrib
 
 GCC 4.2 or **higher** is required to compile.
 
-Library used for parallel computing is [Openmp](https://www.open-mpi.org/)
+Library used for parallel computing is [Open MPI](https://www.open-mpi.org/)
 
 ## Notions
 
