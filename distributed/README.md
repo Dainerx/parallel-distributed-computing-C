@@ -19,7 +19,10 @@ An example of Hostfile in my school lab (lab_room_number-machine_number) comes a
 
 `
 f205-14
+
 f205-15
+
 f205-16
+
 localhost
 `
