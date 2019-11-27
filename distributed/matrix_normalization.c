@@ -15,7 +15,6 @@ int max_custom(int a, int b)
 
 int main(int argc, char **argv)
 {
-    const int root=0;
     int rank, world_size;
     MPI_Init(&argc,&argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -36,17 +35,28 @@ int main(int argc, char **argv)
         }
     }
 
+    printf("local max is %d\n",max_local);
 
+    /*
+    Two instructions reduce then broadcast the max
     MPI_Reduce(&max_local,&max_global,1,MPI_INT,MPI_MAX,root,MPI_COMM_WORLD);
-    if (rank == root)
+    MPI_Bcast(&max_global,1, MPI_INT,root,MPI_COMM_WORLD);
+    */
+
+    // Single Instruction all reduce
+    MPI_Allreduce(&max_local,&max_global,1,MPI_INT,MPI_MAX,MPI_COMM_WORLD);
+    printf("global max is %d\n", max_global);
+
+    int max_local_after_normalization = -1;
+    for (int i=0; i<N; i++)
     {
-        MPI_Bcast(&max_global,1, MPI_INT,root,MPI_COMM_WORLD);
-        printf("max is %d",max_global);
+        for (int j = 0; j<M; j++)
+        {
+            mat[i][j] = mat[i][j] / max_global;
+            max_local = max_custom(mat[i][j],max_local_after_normalization);
+        }
     }
-    else
-    {
-        printf("max is %d",max_global);
-    }
+    printf("local max after matrix normalization is %d\n",max_local_after_normalization);
 
 
     for(int i=0; i<N; i++)
