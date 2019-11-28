@@ -4,6 +4,9 @@
 #include <time.h>
 #define M 10
 #define N 10
+#define THREADS_NUMBER 4
+
+int states[THREADS_NUMBER] = {-1,-1,-1,-1};
 
 int log2_custom (int x)
 {
@@ -15,7 +18,6 @@ int log2_custom (int x)
     }
     return count;
 }
-
 
 int two_to_power_custom(int x)
 {
@@ -56,21 +58,29 @@ int main(int argc, char **argv)
     int steps = log2_custom(world_size);
     for (int i = 0; i<steps; i++)
     {
-        int to_send_to = (rank + two_to_power_custom(i))%world_size;
-        printf("%d\n",i);
-        if (to_send_to < rank)
+        printf("step %d\n",i);
+        int to_send_to = rank + two_to_power_custom(i);
+        if (to_send_to < world_size)
         {
-            printf("hit to_send_to < rank\n");
             if ((rank == root && i>=0)||(rank != root && i>=(log2_custom(rank) + 1 )))
             {
-                printf("hit this\n");
+                printf("I am %d, I sent to %d\n",rank,to_send_to);
+                states[to_send_to] = rank;
                 MPI_Send(&token,1, MPI_INT,to_send_to,tag,MPI_COMM_WORLD);
             }
         }
+        MPI_Wait()
+        // Reception
+        if (states[rank] != -1)
+        {
+            MPI_Recv(&token, 1, MPI_INT, states[rank], tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            printf("I am %d, I recieved from %d, token=%d",rank,states[rank],token);
+            states[rank] = -1;
+        }
     }
-    MPI_Recv(&token, 1, MPI_INT, root, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    printf("I recieved from %d",token);
 
+    /*
+    */
     MPI_Finalize();
     return EXIT_SUCCESS;
 }
