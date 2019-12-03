@@ -4,7 +4,7 @@
 #include <mpi.h>
 #include <time.h>
 #define M 4
-#define N 4
+#define N 3
 #define THREADS_NUMBER 2
 
 // Launch with two threads
