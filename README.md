@@ -3,7 +3,11 @@
 
 This repository contains different C implementations of algorithms done sequentially, in parallel and in distributed manners. Most of these implementations are classic problems that you'll come across when starting to learn parallel and distributed computing. 
 
+
+
 **MultMat** is a project tackling [Matrix multiplication problem](https://en.wikipedia.org/wiki/Matrix_multiplication_algorithm). 
+
+**distributed** contains solutions for different problems using [distributed computing](https://en.wikipedia.org/wiki/Distributed_computing). It contains its own README file. 
 
 ## parallel-computing-C
 

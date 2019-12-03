@@ -24,30 +24,9 @@ int main(int argc, char **argv)
         else
             printf("%d \t", mat[i]);
     }
+
     printf("\n");
-
     bool parity = ((rank%2) == 0);
-
-    //Simple communication without using MPI data type.
-    /*
-    int k, i;
-    k = i = 0; // k used because the matrix is stored as flat array.
-    while(i<N)
-    {
-
-        int to_send_to = (pairity) ? rank + 1 : rank - 1 ;
-        int to_recieve_from = (!pairity) ? rank - 1 : rank + 1;
-        MPI_Send(&mat[k],1, MPI_INT,to_send_to,tag,MPI_COMM_WORLD);
-        MPI_Send(&mat[k+1],1, MPI_INT,to_send_to,tag,MPI_COMM_WORLD);
-
-        MPI_Recv(&token, 1, MPI_INT, to_recieve_from, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        printf("I am %d, I received %d from %d\n", rank, token, to_recieve_from);
-        MPI_Recv(&token, 1, MPI_INT, to_send_to, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        printf("I am %d, I received %d from %d\n", rank, token, to_recieve_from);
-        k += M;
-        i++;
-    }
-    */
 
     MPI_Datatype dt;
     // MPI_Datatype attributes
