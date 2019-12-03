@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <mpi.h>
+#include <math.h>
 #include <time.h>
 #define M 10
 #define N 10
 #define THREADS_NUMBER 4
 
-int states[THREADS_NUMBER] = {-1,-1,-1,-1};
-
+/*
 int log2_custom (int x)
 {
     int count = 0;
@@ -18,24 +18,23 @@ int log2_custom (int x)
     }
     return count;
 }
+*/
 
-int two_to_power_custom(int x)
+int start_from(int x)
 {
-    int res = 1;
-    for(int i = 0; i < x; i++)
-        res *= 2;
-    return res;
+    int p = trunc(log(x) / log(2.0)) + 1;
+    return (1 << p); // shift left the bit set on 1 by r in order to produce 2^r
 }
 
 
 int main(int argc, char **argv)
 {
     const int root = 0;
-    int rank, world_size,token, tag =0;
+    int rank, world_size, tag =16;
     MPI_Init(&argc,&argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size( MPI_COMM_WORLD, &world_size);
-    token = rank;
+    int token = 42; // random value
 
     // Simple star implementation
     /*
@@ -54,33 +53,29 @@ int main(int argc, char **argv)
     }
     */
 
-    // Binomial tree
-    int steps = log2_custom(world_size);
-    for (int i = 0; i<steps; i++)
+    // Broadcast using Binomial tree
+    MPI_Status status;
+    if (rank == root)
     {
-        printf("step %d\n",i);
-        int to_send_to = rank + two_to_power_custom(i);
-        if (to_send_to < world_size)
+        // Move on tree
+        for (int i = 1; i < world_size; i*=2)
         {
-            if ((rank == root && i>=0)||(rank != root && i>=(log2_custom(rank) + 1 )))
-            {
-                printf("I am %d, I sent to %d\n",rank,to_send_to);
-                states[to_send_to] = rank;
-                MPI_Send(&token,1, MPI_INT,to_send_to,tag,MPI_COMM_WORLD);
-            }
+            // i: the index of the neighbor the root is going to send to.
+            MPI_Send(&token,1, MPI_INT,i,tag,MPI_COMM_WORLD);
         }
-        MPI_Wait()
-        // Reception
-        if (states[rank] != -1)
+    }
+    else
+    {
+        // Start by receiving what the root has sent. Note ANY SOURCE here!
+        MPI_Recv(&token, 1, MPI_INT, MPI_ANY_SOURCE, tag, MPI_COMM_WORLD, &status);
+        printf("I %d recieved from %d\n",rank,status.MPI_SOURCE);
+        for(int i = start_from(rank); i+rank  < world_size; i*=2)
         {
-            MPI_Recv(&token, 1, MPI_INT, states[rank], tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            printf("I am %d, I recieved from %d, token=%d",rank,states[rank],token);
-            states[rank] = -1;
+            //i + rank very important since we are starting from 2^rank
+            MPI_Send(&token,1, MPI_INT,i + rank,tag,MPI_COMM_WORLD);
         }
     }
 
-    /*
-    */
     MPI_Finalize();
     return EXIT_SUCCESS;
 }

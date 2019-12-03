@@ -1,2 +1,2 @@
 CC=mpicc
-CFLAGS= -Wall -g
+CFLAGS= -Wall -g -lm
