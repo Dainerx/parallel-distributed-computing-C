@@ -1,15 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <time.h>
 #include <omp.h>
-#define LINES_A 500
+/*#define LINES_A 500
 #define COLUMS_A 2000
 #define LINES_B 2000
-#define COLUMS_B 700
-/*#define LINES_A 5
-#define COLUMS_A 2
+#define COLUMS_B 700*/
+#define LINES_A 5
+#define COLUMS_A 3
 #define LINES_B 2
-#define COLUMS_B 3*/
+#define COLUMS_B 3
 #define MAX_VAL 10
 #define MIN_VAL 2
 
@@ -24,13 +25,22 @@ int ** malloc_mat(int lines, int colums)
   return mat;
 }
 
+void free_mat(int** mat, int lines)
+{
+  for(int i = 0; i < lines; i++)
+  {
+    free(mat[i]);
+  }
+  free(mat);
+}
+
 void fill_mat(int** mat, int lines, int colums)
 {
   for(int i = 0; i < lines; i++)
   {
     for(int j = 0; j < colums; j++)
     {
-      mat[i][j] = rand() % MAX_VAL + MIN_VAL;
+      mat[i][j] = (rand() % MAX_VAL) + MIN_VAL;
     }
   }
 }
@@ -74,8 +84,8 @@ double parallel_mult(int** mat_A, int** mat_B, int** mat_C )
   double start, end, cpu_time_used;
   int i, j, k, t, sum;
   omp_set_dynamic(0);
-  omp_set_num_threads(omp_get_num_procs());
-    printf("le nombre de threads %d\n", omp_get_num_threads());
+  omp_set_num_threads(LINES_A * COLUMS_B);
+  printf("le nombre de threads %d\n", omp_get_num_threads());
   /* JE NE COMPRENDS PAS POURQUOI omp_set_num_threads NE CHANGE PAS LE NOMBRE DE THREADS
   ÇA DONNE TOUJOURS 1 */
   int chunk = COLUMS_A/(omp_get_num_threads()*2);
@@ -92,6 +102,7 @@ double parallel_mult(int** mat_A, int** mat_B, int** mat_C )
   #pragma omp parallel for private(i,j,k) shared(mat_A,mat_B,mat_C)
   for(i = 0; i < LINES_A; i++)
   {
+      printf("le nombre de threads %d\n", omp_get_num_threads());
     //printf("I am thread %d \n", omp_get_thread_num());
     //#pragma omp parallel for
     for(j = 0; j < COLUMS_B; j++)
@@ -172,13 +183,31 @@ double optimizedParallelMultiply(int** matrixA, int** matrixB, int** matrixC){
   return cpu_time_used;
 }
 
+bool check_input(int la, int ca, int lb, int cb)
+{
+  const char *DIMENSION_INTEGRITY = "ERROR: LINES_B # COLUMNS_A. A: %d x %d, B: %d x %d.\n";
+  const char *DIMENSION_MAX = "ERROR: LINES * COLUMNS > 10e6. A: %d x %d, B: %d x %d.\n";
+
+  printf("\033[0;31m"); // sets color for red to display errors.
+  if (ca!=lb)
+  {
+    printf(DIMENSION_INTEGRITY,la,ca,lb,cb);
+    return false;
+  }
+  if (la*ca > 10e6 || lb*cb > 10e6)
+  {
+    printf(DIMENSION_MAX,la,ca,lb,cb);
+    return false;
+  }
+  printf("\033[0m"); // resets the text to default color
+  return true;
+}
 
 int main(int argc, char *argv[])
 {
-  if(COLUMS_A != LINES_B )
+  if(!check_input(LINES_A,COLUMS_A,LINES_B,COLUMS_B))
   {
-    printf(" Vous allez multiplier deux matrice A et B, le nombre de lignes de la matrice B doit donc etre le nombre de colonnes de la matrice A \n ");
-    return -1;
+      return -1;
   }
 
   int** mat_A = malloc_mat(LINES_A, COLUMS_A);
@@ -212,6 +241,8 @@ int main(int argc, char *argv[])
   printf("\nMat C\n");
   display_mat(mat_C, LINES_A, COLUMS_B);*/
 
-  /* DON T FORGET TO FREE */
+  free_mat(mat_A,LINES_A);
+  free_mat(mat_B,LINES_B);
+  free_mat(mat_C,LINES_A);
   return EXIT_SUCCESS;
 }
