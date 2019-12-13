@@ -2,14 +2,14 @@
 #include <stdlib.h>
 #include <time.h>
 #include <omp.h>
-/*#define LINES_A 500
+#define LINES_A 500
 #define COLUMS_A 2000
 #define LINES_B 2000
-#define COLUMS_B 500*/
-#define LINES_A 5
+#define COLUMS_B 700
+/*#define LINES_A 5
 #define COLUMS_A 2
 #define LINES_B 2
-#define COLUMS_B 3
+#define COLUMS_B 3*/
 #define MAX_VAL 10
 #define MIN_VAL 2
 
@@ -117,15 +117,26 @@ void convert(int** matrixA, int** matrixB){
 	#pragma omp parallel for
 	for(int i=0; i<LINES_A; i++){
 		for(int j=0; j<COLUMS_A; j++){
-			flatA[i * LINES_A + j] = matrixA[i][j];
+			flatA[i * COLUMS_A + j] = matrixA[i][j];
 		}
 	}
   #pragma omp parallel for
   for(int i=0; i<LINES_B; i++){
     for(int j=0; j<COLUMS_B; j++){
-      flatB[j * COLUMS_B + i] = matrixB[i][j];
+      flatB[j * LINES_B + i] = matrixB[i][j];
     }
   }
+  // CORRECT
+  /*for(int i=0; i<LINES_A*COLUMS_A; i++)
+  {
+    printf("%d\t", flatA[i]);
+  }
+  printf("\n");
+  for(int i=0; i<LINES_B*COLUMS_B; i++)
+  {
+    printf("%d\t", flatB[i]);
+  }
+  printf("\n");*/
 
 }
 
@@ -144,9 +155,9 @@ double optimizedParallelMultiply(int** matrixA, int** matrixB, int** matrixC){
 	{
 		#pragma omp for schedule(static)
 		for(i=0; i<LINES_A; i++){
-			iOff = i * LINES_A;
+			iOff = i * COLUMS_A;
 			for(j=0; j<COLUMS_B; j++){
-				jOff = j * COLUMS_B;
+				jOff = j * LINES_B;
 				tot = 0;
 				for(k=0; k<COLUMS_A; k++){
 					tot += flatA[iOff + k] * flatB[jOff + k];
@@ -187,6 +198,8 @@ int main(int argc, char *argv[])
   printf("Cpu time used in parallel: %f\n",cpu_time_used);
   /*printf("\nMat C\n");
   display_mat(mat_C, LINES_A, COLUMS_B);*/
+/*  printf("\nMat C\n");
+  display_mat(mat_C, LINES_A, COLUMS_B);*/
 
   cpu_time_used = optimizedParallelMultiply(mat_A, mat_B, mat_C);
   printf("Cpu time used in optimized parallel: %f\n",cpu_time_used);
@@ -202,4 +215,3 @@ int main(int argc, char *argv[])
   /* DON T FORGET TO FREE */
   return EXIT_SUCCESS;
 }
-
