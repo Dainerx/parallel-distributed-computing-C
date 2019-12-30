@@ -7,10 +7,10 @@
 #include "matrix_util.h"
 #include "solver.h"
 #include "metrics.h"
-#define LINES_A 4
-#define COLUMS_A 3
-#define LINES_B 3
-#define COLUMS_B 4
+#define LINES_A 700
+#define COLUMS_A 1000
+#define LINES_B 1000
+#define COLUMS_B 800
 
 int print_colored(int color, const char *format, ...)
 {
