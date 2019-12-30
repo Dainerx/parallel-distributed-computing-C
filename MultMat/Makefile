@@ -1,0 +1,2 @@
+CFLAGS= -Wall -fopenmp -lm
+
