@@ -14,7 +14,7 @@ void init_solver(int la, int ca, int lb, int cb)
 
 double sequential_mult(int **mat_A, int **mat_B, int **mat_C)
 {
-    int lines_a = input.la, lines_b = input.lb;
+    int lines_a = input.la;
     int columns_a = input.ca, columns_b = input.cb;
     double start, end, cpu_time_used;
     int sum;
@@ -38,7 +38,7 @@ double sequential_mult(int **mat_A, int **mat_B, int **mat_C)
 
 double parallel_mult(int num_threads, int **mat_A, int **mat_B, int **mat_C)
 {
-    int lines_a = input.la, lines_b = input.lb;
+    int lines_a = input.la;
     int columns_a = input.ca, columns_b = input.cb;
     double start, end, cpu_time_used;
     int i, j, k, t, sum;
@@ -57,8 +57,7 @@ double parallel_mult(int num_threads, int **mat_A, int **mat_B, int **mat_C)
         {
             //printf("I am thread %d \n", omp_get_thread_num());
             sum = 0;
-#pragma omp parallel for schedule(dynamic, chunk) private(t) reduction(+ \
-                                                                       : sum)
+            #pragma omp parallel for schedule(dynamic, chunk) private(t) reduction(+ : sum)
             for (k = 0; k < columns_a; k++)
             {
                 //printf("I am thread %d \n", omp_get_thread_num());
