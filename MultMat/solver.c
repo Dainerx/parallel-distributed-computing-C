@@ -2,27 +2,32 @@
 #include <omp.h>
 #include "solver.h"
 
-struct FlatArraysCouple
+struct Input input;
+
+void init_solver(int la, int ca, int lb, int cb)
 {
-    int *a; // pointer to the matrix
-    int *b;
-};
+    input.la = la;
+    input.ca = ca;
+    input.lb = lb;
+    input.cb = cb;
+}
 
 double sequential_mult(int **mat_A, int **mat_B, int **mat_C)
 {
+    int lines_a = input.la, lines_b = input.lb;
+    int columns_a = input.ca, columns_b = input.cb;
     double start, end, cpu_time_used;
     int sum;
     start = omp_get_wtime();
-    for (int i = 0; i < LINES_A; i++)
+    for (int i = 0; i < lines_a; i++)
     {
-        for (int j = 0; j < COLUMS_B; j++)
+        for (int j = 0; j < columns_b; j++)
         {
             sum = 0;
-            for (int k = 0; k < COLUMS_A; k++)
+            for (int k = 0; k < columns_a; k++)
             {
                 sum += (mat_A[i][k] * mat_B[k][j]);
             }
-            //printf("%d,%d\n", i, j);
             mat_C[i][j] = sum;
         }
     }
@@ -33,26 +38,28 @@ double sequential_mult(int **mat_A, int **mat_B, int **mat_C)
 
 double parallel_mult(int num_threads, int **mat_A, int **mat_B, int **mat_C)
 {
+    int lines_a = input.la, lines_b = input.lb;
+    int columns_a = input.ca, columns_b = input.cb;
     double start, end, cpu_time_used;
     int i, j, k, t, sum;
     omp_set_dynamic(0);
     omp_set_num_threads(num_threads);
-    int chunk = COLUMS_A / (omp_get_num_threads() * 2);
+    int chunk = columns_a / (omp_get_num_threads() * 2);
     start = omp_get_wtime();
 /* IMPORTANT ICI VU QUE LA VALEUR DE CHUNK N EST PAS BONNE, ÇA DONNE LE MEME
   RESULTAT SI ON NE MET PAS schedule(dynamic, chunk) */
 #pragma omp parallel for private(i, j, k) shared(mat_A, mat_B, mat_C)
-    for (i = 0; i < LINES_A; i++)
+    for (i = 0; i < lines_a; i++)
     {
         //printf("le nombre de threads %d\n", omp_get_num_threads());
         //#pragma omp parallel for
-        for (j = 0; j < COLUMS_B; j++)
+        for (j = 0; j < columns_b; j++)
         {
             //printf("I am thread %d \n", omp_get_thread_num());
             sum = 0;
 #pragma omp parallel for schedule(dynamic, chunk) private(t) reduction(+ \
                                                                        : sum)
-            for (k = 0; k < COLUMS_A; k++)
+            for (k = 0; k < columns_a; k++)
             {
                 //printf("I am thread %d \n", omp_get_thread_num());
                 t = (mat_A[i][k] * mat_B[k][j]);
@@ -68,24 +75,26 @@ double parallel_mult(int num_threads, int **mat_A, int **mat_B, int **mat_C)
 
 struct FlatArraysCouple convert(int num_threads, int **matrixA, int **matrixB)
 {
-    int *a = malloc((LINES_A * COLUMS_A) * sizeof(int));
-    int *b = malloc((LINES_B * COLUMS_B) * sizeof(int));
+    int lines_a = input.la, lines_b = input.lb;
+    int columns_a = input.ca, columns_b = input.cb;
+    int *a = malloc((lines_a * columns_a) * sizeof(int));
+    int *b = malloc((lines_b * columns_b) * sizeof(int));
     struct FlatArraysCouple flat_array_couple = {a, b};
     omp_set_num_threads(num_threads);
 #pragma omp parallel for
-    for (int i = 0; i < LINES_A; i++)
+    for (int i = 0; i < lines_a; i++)
     {
-        for (int j = 0; j < COLUMS_A; j++)
+        for (int j = 0; j < columns_a; j++)
         {
-            a[i * COLUMS_A + j] = matrixA[i][j];
+            a[i * columns_a + j] = matrixA[i][j];
         }
     }
 #pragma omp parallel for
-    for (int i = 0; i < LINES_B; i++)
+    for (int i = 0; i < lines_b; i++)
     {
-        for (int j = 0; j < COLUMS_B; j++)
+        for (int j = 0; j < columns_b; j++)
         {
-            b[j * LINES_B + i] = matrixB[i][j];
+            b[j * lines_b + i] = matrixB[i][j];
         }
     }
     return flat_array_couple;
@@ -93,6 +102,8 @@ struct FlatArraysCouple convert(int num_threads, int **matrixA, int **matrixB)
 
 double optimized_parallel_multiply(int num_threads, int **matrixA, int **matrixB, int **matrixC)
 {
+    int lines_a = input.la, lines_b = input.lb;
+    int columns_a = input.ca, columns_b = input.cb;
     /*
 		Parallel multiply given input matrices using optimal methods and return resultant matrix
 	*/
@@ -108,14 +119,14 @@ double optimized_parallel_multiply(int num_threads, int **matrixA, int **matrixB
 #pragma omp parallel shared(matrixC) private(i, j, k, iOff, jOff, tot) num_threads(40)
     {
 #pragma omp for schedule(static)
-        for (i = 0; i < LINES_A; i++)
+        for (i = 0; i < lines_a; i++)
         {
-            iOff = i * COLUMS_A;
-            for (j = 0; j < COLUMS_B; j++)
+            iOff = i * columns_a;
+            for (j = 0; j < columns_b; j++)
             {
-                jOff = j * LINES_B;
+                jOff = j * lines_b;
                 tot = 0;
-                for (k = 0; k < COLUMS_A; k++)
+                for (k = 0; k < columns_a; k++)
                 {
                     tot += flatA[iOff + k] * flatB[jOff + k];
                 }

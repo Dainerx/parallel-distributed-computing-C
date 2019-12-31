@@ -3,12 +3,23 @@
 #include <stdbool.h>
 #include <time.h>
 #include <omp.h>
-#define LINES_A 4
-#define COLUMS_A 3
-#define LINES_B 3
-#define COLUMS_B 4
 
-struct FlatArraysCouple;
+struct FlatArraysCouple
+{
+    int *a; // pointer to the matrix
+    int *b;
+};
+
+struct Input
+{
+    int la;
+    int ca;
+    int lb;
+    int cb;
+};
+
+// Initliaze the solver using the matrix a and matrix b dimensions.
+void init_solver(int la, int ca, int lb, int cb);
 
 // Takes the matrices to be computed as arguments.
 // Perform matrix multiplication sequentially.
