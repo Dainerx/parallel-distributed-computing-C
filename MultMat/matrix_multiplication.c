@@ -33,7 +33,7 @@ int print_colored(int color, const char *format, ...)
   printf("\033[0m"); // resets the text to default color
   return done;
 }
-bool check_input(char *argv[])
+bool check_input(char *argv[], int *la, int *ca, int *lb, int *cb)
 {
   const char *INPUT_FORMAT = "ERROR: matrices' dimensions must be integers.\n";
   const char *DIMENSION_INTEGRITY = "ERROR: LINES_B # COLUMNS_A. A: %d x %d, B: %d x %d.\n";
@@ -41,23 +41,23 @@ bool check_input(char *argv[])
 
   char *p;
   errno = 0; // not 'int errno', because the '#include' already defined it
-  int la = strtol(argv[1], &p, 10);
-  int ca = strtol(argv[2], &p, 10);
-  int lb = strtol(argv[3], &p, 10);
-  int cb = strtol(argv[4], &p, 10);
+  *la = strtol(argv[1], &p, 10);
+  *ca = strtol(argv[2], &p, 10);
+  *lb = strtol(argv[3], &p, 10);
+  *cb = strtol(argv[4], &p, 10);
   if (*p != '\0' || errno != 0)
   {
     print_colored(1, INPUT_FORMAT);
     return false;
   }
-  if (ca != lb)
+  if (*ca != *lb)
   {
-    print_colored(1, DIMENSION_INTEGRITY, la, ca, lb, cb);
+    print_colored(1, DIMENSION_INTEGRITY, *la, *ca, *lb, *cb);
     return false;
   }
-  if (la * ca > MAX_DIMENSION || lb * cb > MAX_DIMENSION)
+  if ((*la) * (*ca) > MAX_DIMENSION || (*lb) * (*cb) > MAX_DIMENSION)
   {
-    print_colored(1, DIMENSION_MAX, la, ca, lb, cb);
+    print_colored(1, DIMENSION_MAX, *la, *ca, *lb, *cb);
     return false;
   }
   return true;
@@ -71,18 +71,12 @@ int main(int argc, char *argv[])
     print_colored(0, "Run with flag --help for usage.");
     return 1;
   }
-
-  if (!check_input(argv))
+  int lines_a, columns_a, lines_b, columns_b;
+  if (!check_input(argv, &lines_a, &columns_a, &lines_b, &columns_b ))
   {
     return 1;
   }
-
-  // All is good
-  int lines_a = strtol(argv[1], NULL, 10);
-  int columns_a = strtol(argv[2], NULL, 10);
-  int lines_b = strtol(argv[3], NULL, 10);
-  int columns_b = strtol(argv[4], NULL, 10);
-  printf("%d,%d %d,%d", lines_a, columns_a, lines_b, columns_b);
+  printf("%d,%d %d,%d \n", lines_a, columns_a, lines_b, columns_b);
 
   int **mat_A = malloc_mat(lines_a, columns_a);
   int **mat_B = malloc_mat(lines_b, columns_b);
