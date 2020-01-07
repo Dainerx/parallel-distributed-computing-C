@@ -18,15 +18,15 @@ int main(int argc, char *argv[])
     return 1;
   }
 
-  printf("A: (%d,%d)\nB: (%d,%d)\n", ci.lines_a, ci.columns_a, ci.lines_b, ci.columns_b);
+  printf("\n    A: (%d,%d)\n    B: (%d,%d)\n", ci.lines_a, ci.columns_a, ci.lines_b, ci.columns_b);
   int num_threads = ci.num_threads;
-  printf("Threads number: %d \n", num_threads);
+  printf("    Threads number: %d \n", num_threads);
 
   int **mat_A = malloc_mat(ci.lines_a, ci.columns_a);
   int **mat_B = malloc_mat(ci.lines_b, ci.columns_b);
   int **mat_C = malloc_mat(ci.lines_a, ci.columns_b);
 
-  const char *labels[3] = {"seq", "parallel", "parallel optimized"};
+  const char *labels[3] = {"seq               ", "parallel          ", "parallel optimized"};
   srand(time(NULL));
   fill_mat(mat_A, ci.lines_a, ci.columns_a);
   fill_mat(mat_B, ci.lines_b, ci.columns_b);

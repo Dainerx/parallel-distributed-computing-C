@@ -1,5 +1,6 @@
 #include "metrics.h"
 #include "stdio.h"
+#include <string.h>
 
 double speedup(double seq_time, double parallel_time)
 {
@@ -17,14 +18,19 @@ double cost(double parallel_time, int num_threads)
 // vars as sizes!!!!
 void print_metrics(const char **labels, float **metrics)
 {
-    printf("Solver\t Time\t Speedup\t Effic\t Cost\n");
+    char *esp = "   ";
+    char *menu = "Solver\t\t\t   Time\t\t\t   Speedup\t\t   Effic\t\t   Cost\n";
+    printf("\n%s %s", esp, menu);
+    printf("   -----------------------------------------------------------------------------------------------------------------\n");
     for (int i = 0; i < 3; i++)
     {
-        printf("%s\t", labels[i]);
+        printf("%s %s\t\t", esp, labels[i]);
         for (int j = 0; j < 4; j++)
         {
-            printf("%f\t", metrics[i][j]);
+            printf("%s%f\t\t", esp, metrics[i][j]);
         }
         printf("\n");
     }
+    printf("\n");
+
 }
