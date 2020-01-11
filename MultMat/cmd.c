@@ -34,12 +34,15 @@ int print_colored(int color, const char *format, ...)
     return done;
 }
 
+// Afficher un guide pour Multmat
 void usage()
 {
     const char *USAGE = "Multmat C project for matrix multiplication benchmarking of different solvers.\nUsage :\n-a <lines_a>\t\tlines for matrix A\n-b <columns_a>\t\tcolumns for matrix A\n-c <lines_b>\t\tlines for matrix B\n-d <columns_b>\t\tcolumns for matrix\n-n <number_threads>\tnumber of threads to launch parallel solvers with\n-h\t\t\tprint usage\n";
     printf("%s", USAGE);
 }
 
+// Convertir une chaine de caractères à un entier positif.
+// Retourner -1 dans le cas d'une erreur.
 int toint(char *s)
 {
     char *p;
@@ -52,6 +55,7 @@ int toint(char *s)
     return a;
 }
 
+// Retourner la valeur d'un flag, -1 dans le cas d'une erreur.
 int check_flag_value(char *flag, char *s)
 {
     const char *ERROR_FLAG_VALUE = "ERROR: flag %s is required.\n";
@@ -70,6 +74,7 @@ int check_flag_value(char *flag, char *s)
     return x;
 }
 
+// Retourner vrai si l'input est correct, faux sinon.
 bool check_input(struct CmdInput input)
 {
     const char *ERROR_DIMENSION_INTEGRITY = "ERROR: LINES_B # COLUMNS_A. A: %d x %d, B: %d x %d.\n";
@@ -93,6 +98,8 @@ bool check_input(struct CmdInput input)
     return true;
 }
 
+// Lire tous les valeurs des arguments de la ligne de commande
+// préparer l'input et retourner une instance de CmdInput.
 struct CmdInput read_input(int argc, char *argv[])
 {
     struct CmdInput i = {-1, -1, -1, -1, -1};

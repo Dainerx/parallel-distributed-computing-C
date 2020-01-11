@@ -9,6 +9,7 @@
 #include "solver.h"
 #include "metrics.h"
 #include "cmd.h"
+#include "strassen.h"
 
 int main(int argc, char *argv[])
 {
@@ -33,7 +34,8 @@ int main(int argc, char *argv[])
   int **mat_B = malloc_mat(ci.lines_b, ci.columns_b);
   int **mat_C = malloc_mat(ci.lines_a, ci.columns_b);
 
-  const char *labels[3] = {"seq               ", "parallel          ", "parallel optimized"};
+  const char *labels[4] = {"seq", "seq strassen", "parallel", "parallel optimized"};
+  float **metrics = malloc_matf(4, 4);
   srand(time(NULL));
 
   // Remlissage des matrices A et B
@@ -43,39 +45,42 @@ int main(int argc, char *argv[])
   //Initialiser la structure input par le nombre de lignes et de colonnes des matrices A et B
   init_solver(ci.lines_a, ci.columns_a, ci.lines_b, ci.columns_b);
 
-
   // Multiplication séquentielle des matrices A et B
   double cpu_time_used_seq;
   cpu_time_used_seq = sequential_mult(mat_A, mat_B, mat_C);
-
-  // Allocation d'une matrice pour mettre les résultats des metriques(Temps, SpeedUp, Efficacité, Cost)
-  float **metrics = malloc_matf(3, 4);
-
   // Mettre les résultats des metriques pour le calcul séquentiel dans la matrice metrics
   metrics[0][0] = cpu_time_used_seq;
   metrics[0][1] = 1;
   metrics[0][2] = 1;
   metrics[0][3] = 1;
 
+  // Multiplication séquentielle en réduisant le nombre de multiplication.
+  fill_mat(mat_C, ci.lines_a, ci.columns_b); // Réinitialissation des lignes de cache.
+  cpu_time_used_seq = strassen_mult(mat_A, mat_B, mat_C);
+  metrics[1][0] = cpu_time_used_seq;
+  metrics[1][1] = 1;
+  metrics[1][2] = 1;
+  metrics[1][3] = 1;
+
   // Multiplication en parallèle version naive des matrices A et B (Omp)
   fill_mat(mat_C, ci.lines_a, ci.columns_b); // Réinitialissation des lignes de cache.
   double cpu_time_used_parallel = parallel_mult(num_threads, mat_A, mat_B, mat_C);
 
   // Mettre les résultats des metriques pour le calcul en parallèle version naive dans la matrice metrics
-  metrics[1][0] = cpu_time_used_parallel;
-  metrics[1][1] = speedup(cpu_time_used_seq, cpu_time_used_parallel);
-  metrics[1][2] = efficiency(cpu_time_used_seq, cpu_time_used_parallel, num_threads);
-  metrics[1][3] = cost(cpu_time_used_parallel, num_threads);
-
-  // Multiplication en parallèle version optimisée des matrices A et B
-  fill_mat(mat_C, ci.lines_a, ci.columns_b);// Réinitialissation des lignes de cache.
-  cpu_time_used_parallel = optimized_parallel_multiply(num_threads, mat_A, mat_B, mat_C);
-
-  // Mettre les résultats des metriques pour le calcul en parallèle version optimisée dans la matrice metrics
   metrics[2][0] = cpu_time_used_parallel;
   metrics[2][1] = speedup(cpu_time_used_seq, cpu_time_used_parallel);
   metrics[2][2] = efficiency(cpu_time_used_seq, cpu_time_used_parallel, num_threads);
   metrics[2][3] = cost(cpu_time_used_parallel, num_threads);
+
+  // Multiplication en parallèle version optimisée des matrices A et B
+  fill_mat(mat_C, ci.lines_a, ci.columns_b); // Réinitialissation des lignes de cache.
+  cpu_time_used_parallel = optimized_parallel_multiply(num_threads, mat_A, mat_B, mat_C);
+
+  // Mettre les résultats des metriques pour le calcul en parallèle version optimisée dans la matrice metrics
+  metrics[3][0] = cpu_time_used_parallel;
+  metrics[3][1] = speedup(cpu_time_used_seq, cpu_time_used_parallel);
+  metrics[3][2] = efficiency(cpu_time_used_seq, cpu_time_used_parallel, num_threads);
+  metrics[3][3] = cost(cpu_time_used_parallel, num_threads);
 
   // Afficher les metriques pour chaque solveur
   print_metrics(labels, metrics);

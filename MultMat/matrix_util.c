@@ -52,3 +52,40 @@ void display_mat(int **mat, int lines, int colums)
         printf("\n");
     }
 }
+
+void add_mats(int n, int **a, int **b, int **c)
+{
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            c[i][j] = a[i][j] + b[i][j];
+        }
+    }
+}
+
+void substract_mats(int n, int **a, int **b, int **c)
+{
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            c[i][j] = a[i][j] - b[i][j];
+        }
+    }
+}
+
+void multiply_mats(int n, int **a, int **b, int **c)
+{
+    for (int i = 0; i < 2; i++)
+    {
+        for (int j = 0; j < 2; j++)
+        {
+            c[i][j] = 0;
+            for (int t = 0; t < 2; t++)
+            {
+                c[i][j] = c[i][j] + a[i][t] * b[t][j];
+            }
+        }
+    }
+}
