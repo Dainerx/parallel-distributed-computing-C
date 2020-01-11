@@ -7,18 +7,21 @@
 #include <stdarg.h>
 #include <errno.h>
 
+/*
+  Colorer les messages affichés
+*/
 int print_colored(int color, const char *format, ...)
 {
     switch (color)
     {
-    case 1:                   //red
-        printf("\033[0;31m"); // sets color for red
+    case 1:                   //rouge
+        printf("\033[0;31m"); // Définir la couleur rouge
         break;
     case 2:
-        printf("\033[0;31m"); // sets color for green
+        printf("\033[0;31m"); // Définir la couleur vert
         break;
     default:
-        printf("\033[0m"); // resets the text to default color
+        printf("\033[0m"); // Remettre le texte à la couleur par défaut
         break;
     }
     va_list arg;
@@ -27,7 +30,7 @@ int print_colored(int color, const char *format, ...)
     va_start(arg, format);
     done = vfprintf(stdout, format, arg);
     va_end(arg);
-    printf("\033[0m"); // resets the text to default color
+    printf("\033[0m"); // Remettre le texte à la couleur par défaut
     return done;
 }
 
@@ -40,7 +43,7 @@ void usage()
 int toint(char *s)
 {
     char *p;
-    errno = 0; // not 'int errno', because the '#include' already defined it
+    errno = 0; // pas 'int errno', car le '#include' l'a déjà défini
     int a = strtol(s, &p, 10);
     if (*p != '\0' || errno != 0)
     {

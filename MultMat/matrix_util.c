@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 // use templates or macros for this
+// Allocation d'une matrice avec le nombre de lignes et de colonnes passés en paramètre
 int **malloc_mat(int lines, int colums)
 {
     int **mat = (int **)malloc(lines * sizeof(int *));
@@ -17,6 +18,7 @@ float **malloc_matf(int lines, int colums)
     return mat;
 }
 
+// Désallocation d'une matrice
 void free_mat(int **mat, int lines)
 {
     for (int i = 0; i < lines; i++)
@@ -26,6 +28,7 @@ void free_mat(int **mat, int lines)
     free(mat);
 }
 
+// Remplissage d'une matrice avec des valeurs aléatoires
 void fill_mat(int **mat, int lines, int colums)
 {
     for (int i = 0; i < lines; i++)
@@ -37,6 +40,7 @@ void fill_mat(int **mat, int lines, int colums)
     }
 }
 
+// Affichage d'une matrice
 void display_mat(int **mat, int lines, int colums)
 {
     for (int i = 0; i < lines; i++)

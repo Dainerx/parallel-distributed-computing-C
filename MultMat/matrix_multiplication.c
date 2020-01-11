@@ -12,6 +12,12 @@
 
 int main(int argc, char *argv[])
 {
+  /*
+    Vérifier la syntaxe ainsi que le contenu de la ligne de commande et afficher un message d'erreur en cas d'erreur
+    exemple: si un flag n'a pas été renseigné ou les valeurs sont négatives ou le nombre de colonnes de la matrice A
+    est different du nombre de lignes de la matrice B, un message d'erreur personnalisé est affiché
+    La suntaxe est: -a 700 -b 900 -c 900 -d 600 -n 25
+  */
   struct CmdInput ci = read_input(argc, argv);
   if (check_input(ci) == false)
   {
@@ -22,46 +28,59 @@ int main(int argc, char *argv[])
   int num_threads = ci.num_threads;
   printf("    Threads number: %d \n", num_threads);
 
+  // Allocation des matrice A, B et C
   int **mat_A = malloc_mat(ci.lines_a, ci.columns_a);
   int **mat_B = malloc_mat(ci.lines_b, ci.columns_b);
   int **mat_C = malloc_mat(ci.lines_a, ci.columns_b);
 
   const char *labels[3] = {"seq               ", "parallel          ", "parallel optimized"};
   srand(time(NULL));
+
+  // Remlissage des matrices A et B
   fill_mat(mat_A, ci.lines_a, ci.columns_a);
   fill_mat(mat_B, ci.lines_b, ci.columns_b);
+
+  //Initialiser la structure input par le nombre de lignes et de colonnes des matrices A et B
   init_solver(ci.lines_a, ci.columns_a, ci.lines_b, ci.columns_b);
 
-  // Sequential solver.
+
+  // Multiplication séquentielle des matrices A et B
   double cpu_time_used_seq;
   cpu_time_used_seq = sequential_mult(mat_A, mat_B, mat_C);
+
+  // Allocation d'une matrice pour mettre les résultats des metriques(Temps, SpeedUp, Efficacité, Cost)
   float **metrics = malloc_matf(3, 4);
+
+  // Mettre les résultats des metriques pour le calcul séquentiel dans la matrice metrics
   metrics[0][0] = cpu_time_used_seq;
   metrics[0][1] = 1;
   metrics[0][2] = 1;
   metrics[0][3] = 1;
 
-  // Parallel solver section
-  // Simple parallel solving section.
-  fill_mat(mat_C, ci.lines_a, ci.columns_b); // Resets cache lines.
+  // Multiplication en parallèle version naive des matrices A et B (Omp)
+  fill_mat(mat_C, ci.lines_a, ci.columns_b); // Réinitialissation des lignes de cache.
   double cpu_time_used_parallel = parallel_mult(num_threads, mat_A, mat_B, mat_C);
+
+  // Mettre les résultats des metriques pour le calcul en parallèle version naive dans la matrice metrics
   metrics[1][0] = cpu_time_used_parallel;
   metrics[1][1] = speedup(cpu_time_used_seq, cpu_time_used_parallel);
   metrics[1][2] = efficiency(cpu_time_used_seq, cpu_time_used_parallel, num_threads);
   metrics[1][3] = cost(cpu_time_used_parallel, num_threads);
 
-  // Optimized parallel solving section.
-  fill_mat(mat_C, ci.lines_a, ci.columns_b); // Resets cache lines.
+  // Multiplication en parallèle version optimisée des matrices A et B
+  fill_mat(mat_C, ci.lines_a, ci.columns_b);// Réinitialissation des lignes de cache.
   cpu_time_used_parallel = optimized_parallel_multiply(num_threads, mat_A, mat_B, mat_C);
+
+  // Mettre les résultats des metriques pour le calcul en parallèle version optimisée dans la matrice metrics
   metrics[2][0] = cpu_time_used_parallel;
   metrics[2][1] = speedup(cpu_time_used_seq, cpu_time_used_parallel);
   metrics[2][2] = efficiency(cpu_time_used_seq, cpu_time_used_parallel, num_threads);
   metrics[2][3] = cost(cpu_time_used_parallel, num_threads);
 
-  // Print metrics for each solver.
+  // Afficher les metriques pour chaque solveur
   print_metrics(labels, metrics);
 
-  // Free matrices to avoid memory leaks.
+  // Désallocation des matrice pour éviter les fuites de mémoire.
   free_mat(mat_A, ci.lines_a);
   free_mat(mat_B, ci.lines_b);
   free_mat(mat_C, ci.lines_a);
