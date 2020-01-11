@@ -13,3 +13,9 @@ void free_mat(int **mat, int lines);
 void fill_mat(int **mat, int lines, int columns);
 
 void display_mat(int **mat, int lines, int colums);
+
+void add_mats(int n, int **a, int **b, int **c);
+
+void substract_mats(int n, int **a, int **b, int **c);
+
+void multiply_mats(int n, int **a, int **b, int **c);

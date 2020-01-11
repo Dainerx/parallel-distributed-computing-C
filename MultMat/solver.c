@@ -1,6 +1,7 @@
 #include <time.h>
 #include <omp.h>
 #include "solver.h"
+#include "strassen.h"
 
 struct Input input;
 
@@ -17,8 +18,8 @@ double sequential_mult(int **mat_A, int **mat_B, int **mat_C)
     int lines_a = input.la;
     int columns_a = input.ca, columns_b = input.cb;
     double start, end, cpu_time_used;
-    int sum;
     start = omp_get_wtime();
+    int sum;
     for (int i = 0; i < lines_a; i++)
     {
         for (int j = 0; j < columns_b; j++)
@@ -31,6 +32,16 @@ double sequential_mult(int **mat_A, int **mat_B, int **mat_C)
             mat_C[i][j] = sum;
         }
     }
+    end = omp_get_wtime();
+    cpu_time_used = (end - start);
+    return cpu_time_used;
+}
+
+double strassen_mult(int **mat_A, int **mat_B, int **mat_C)
+{
+    double start, end, cpu_time_used;
+    start = omp_get_wtime();
+    strassen(input.ca, mat_A, mat_B, mat_C);
     end = omp_get_wtime();
     cpu_time_used = (end - start);
     return cpu_time_used;
@@ -57,7 +68,8 @@ double parallel_mult(int num_threads, int **mat_A, int **mat_B, int **mat_C)
         {
             //printf("I am thread %d \n", omp_get_thread_num());
             sum = 0;
-            #pragma omp parallel for schedule(dynamic, chunk) private(t) reduction(+ : sum)
+#pragma omp parallel for schedule(dynamic, chunk) private(t) reduction(+ \
+                                                                       : sum)
             for (k = 0; k < columns_a; k++)
             {
                 //printf("I am thread %d \n", omp_get_thread_num());

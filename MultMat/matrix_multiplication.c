@@ -9,6 +9,7 @@
 #include "solver.h"
 #include "metrics.h"
 #include "cmd.h"
+#include "strassen.h"
 
 int main(int argc, char *argv[])
 {
@@ -26,7 +27,8 @@ int main(int argc, char *argv[])
   int **mat_B = malloc_mat(ci.lines_b, ci.columns_b);
   int **mat_C = malloc_mat(ci.lines_a, ci.columns_b);
 
-  const char *labels[3] = {"seq", "parallel", "parallel optimized"};
+  const char *labels[4] = {"seq", "seq strassen", "parallel", "parallel optimized"};
+  float **metrics = malloc_matf(4, 4);
   srand(time(NULL));
   fill_mat(mat_A, ci.lines_a, ci.columns_a);
   fill_mat(mat_B, ci.lines_b, ci.columns_b);
@@ -35,28 +37,36 @@ int main(int argc, char *argv[])
   // Sequential solver.
   double cpu_time_used_seq;
   cpu_time_used_seq = sequential_mult(mat_A, mat_B, mat_C);
-  float **metrics = malloc_matf(3, 4);
+  display_mat(mat_C, ci.lines_a, ci.lines_b);
   metrics[0][0] = cpu_time_used_seq;
   metrics[0][1] = 1;
   metrics[0][2] = 1;
   metrics[0][3] = 1;
 
+  // Sequential strassen
+  fill_mat(mat_C, ci.lines_a, ci.columns_b); // Resets cache lines.
+  cpu_time_used_seq = strassen_mult(mat_A, mat_B, mat_C);
+  metrics[1][0] = cpu_time_used_seq;
+  metrics[1][1] = 1;
+  metrics[1][2] = 1;
+  metrics[1][3] = 1;
+
   // Parallel solver section
   // Simple parallel solving section.
   fill_mat(mat_C, ci.lines_a, ci.columns_b); // Resets cache lines.
   double cpu_time_used_parallel = parallel_mult(num_threads, mat_A, mat_B, mat_C);
-  metrics[1][0] = cpu_time_used_parallel;
-  metrics[1][1] = speedup(cpu_time_used_seq, cpu_time_used_parallel);
-  metrics[1][2] = efficiency(cpu_time_used_seq, cpu_time_used_parallel, num_threads);
-  metrics[1][3] = cost(cpu_time_used_parallel, num_threads);
-
-  // Optimized parallel solving section.
-  fill_mat(mat_C, ci.lines_a, ci.columns_b); // Resets cache lines.
-  cpu_time_used_parallel = optimized_parallel_multiply(num_threads, mat_A, mat_B, mat_C);
   metrics[2][0] = cpu_time_used_parallel;
   metrics[2][1] = speedup(cpu_time_used_seq, cpu_time_used_parallel);
   metrics[2][2] = efficiency(cpu_time_used_seq, cpu_time_used_parallel, num_threads);
   metrics[2][3] = cost(cpu_time_used_parallel, num_threads);
+
+  // Optimized parallel solving section.
+  fill_mat(mat_C, ci.lines_a, ci.columns_b); // Resets cache lines.
+  cpu_time_used_parallel = optimized_parallel_multiply(num_threads, mat_A, mat_B, mat_C);
+  metrics[3][0] = cpu_time_used_parallel;
+  metrics[3][1] = speedup(cpu_time_used_seq, cpu_time_used_parallel);
+  metrics[3][2] = efficiency(cpu_time_used_seq, cpu_time_used_parallel, num_threads);
+  metrics[3][3] = cost(cpu_time_used_parallel, num_threads);
 
   // Print metrics for each solver.
   print_metrics(labels, metrics);
