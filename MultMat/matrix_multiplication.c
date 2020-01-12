@@ -65,6 +65,9 @@ int main(int argc, char *argv[])
   if (ci.lines_a != ci.columns_a && ci.lines_a != ci.columns_a)
   {
     int max = get_max(get_max(ci.lines_a, ci.columns_a), ci.columns_b);
+      printf("%d\n",max );
+    max = get_puiss2(max);
+    printf("%d\n",max );
     int **mat_A_squared = malloc_mat(max, max);
     int **mat_B_squared = malloc_mat(max, max);
     int **mat_C_squared = malloc_mat(max, max);

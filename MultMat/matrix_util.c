@@ -1,5 +1,6 @@
 #include "matrix_util.h"
 #include <stdio.h>
+#include <math.h>
 
 // use templates or macros for this
 // Allocation d'une matrice avec le nombre de lignes et de colonnes passés en paramètre
@@ -121,4 +122,16 @@ bool equal_mats(int lines, int columns, int **a, int **b)
         }
     }
     return true;
+}
+
+int get_puiss2(int n)
+{
+  int i = 0;
+  int t = 0;
+  while(t < n)
+  {
+    t = pow(2,i);
+    i++;
+  }
+  return (pow(2,i-1));
 }
