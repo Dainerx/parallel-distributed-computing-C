@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
   // solver.
   int **mat_C_Other = malloc_mat(ci.lines_a, ci.columns_b);
 
-  const char *labels[4] = {"seq", "seq strassen", "parallel", "parallel optimized"};
+  const char *labels[4] = {"sequential native", "sequential strassen", "parallel native", "parallel optimized"};
   float **metrics = malloc_matf(4, 4);
   srand(time(NULL));
 
@@ -61,6 +61,7 @@ int main(int argc, char *argv[])
 
   // Multiplication séquentielle en réduisant le nombre de multiplication.
   // SI LES MATRICES NE SONT PAS CARRÉES
+  double cpu_time_used_strassen;
   if (ci.lines_a != ci.columns_a && ci.lines_a != ci.columns_a)
   {
     int max = get_max(get_max(ci.lines_a, ci.columns_a), ci.columns_b);
@@ -70,7 +71,7 @@ int main(int argc, char *argv[])
 
     make_square(mat_A_squared, mat_A, ci.lines_a, ci.columns_a, max);
     make_square(mat_B_squared, mat_B, ci.lines_b, ci.columns_b, max);
-    cpu_time_used_seq = strassen_mult(mat_A_squared, mat_B_squared, mat_C_squared, mat_C_Other, max);
+    cpu_time_used_strassen = strassen_mult(mat_A_squared, mat_B_squared, mat_C_squared, mat_C_Other, max);
 
     free_mat(mat_A_squared, max);
     free_mat(mat_B_squared, max);
@@ -78,14 +79,14 @@ int main(int argc, char *argv[])
   }
   else
   {
-    cpu_time_used_seq = strassen_mult(mat_A, mat_B, mat_C_Other, mat_C_Other, ci.columns_a);
+    cpu_time_used_strassen = strassen_mult(mat_A, mat_B, mat_C_Other, mat_C_Other, ci.columns_a);
   }
 
   if (equal_mats(ci.lines_a, ci.columns_b, mat_C_Seq, mat_C_Other) == false)
   {
     printf("Multiplication séquentielle en réduisant le nombre de multiplication has produced a wrong result.\n");
   }
-  metrics[1][0] = cpu_time_used_seq;
+  metrics[1][0] = cpu_time_used_strassen;
   metrics[1][1] = 1;
   metrics[1][2] = 1;
   metrics[1][3] = 1;

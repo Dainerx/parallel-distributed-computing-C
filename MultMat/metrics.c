@@ -25,7 +25,7 @@ double cost(double parallel_time, int num_threads)
 void print_metrics(const char **labels, float **metrics)
 {
     char *esp = "   ";
-    char *menu = "Solver\t\t\t   Time\t\t\t   Speedup\t\t   Effic\t\t   Cost\n";
+    char *menu = "Solver\t\t\t   Time\t\t\t   Speedup\t\t   Efficiency\t\t   Cost\n";
     printf("\n%s %s", esp, menu);
     printf("   -----------------------------------------------------------------------------------------------------------------\n");
     for (int i = 0; i < 4; i++)
@@ -38,5 +38,4 @@ void print_metrics(const char **labels, float **metrics)
         printf("\n");
     }
     printf("\n");
-
 }
