@@ -28,7 +28,7 @@ void print_metrics(const char **labels, float **metrics)
     char *menu = "Solver\t\t\t   Time\t\t\t   Speedup\t\t   Effic\t\t   Cost\n";
     printf("\n%s %s", esp, menu);
     printf("   -----------------------------------------------------------------------------------------------------------------\n");
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 4; i++)
     {
         printf("%s %s\t\t", esp, labels[i]);
         for (int j = 0; j < 4; j++)

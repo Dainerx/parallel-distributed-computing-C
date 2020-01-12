@@ -19,3 +19,7 @@ void add_mats(int n, int **a, int **b, int **c);
 void substract_mats(int n, int **a, int **b, int **c);
 
 void multiply_mats(int n, int **a, int **b, int **c);
+
+void make_square(int** mat_squared, int** mat,int line, int column,int n);
+
+int get_max(int a, int b);

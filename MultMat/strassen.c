@@ -31,7 +31,7 @@ void strassen(int n, int **a, int **b, int **c)
 
     if (n == 1)
     {
-        c[0][0] = a[0][0] * b[0][0]
+        c[0][0] = a[0][0] * b[0][0];
     }
     else if (n == 2)
     {

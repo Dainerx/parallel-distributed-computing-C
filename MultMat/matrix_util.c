@@ -89,3 +89,20 @@ void multiply_mats(int n, int **a, int **b, int **c)
         }
     }
 }
+void make_square(int** mat_squared, int** mat,int line, int column,int n)
+{
+      for(int i =0; i<line; i++)
+      {
+          for(int j =0; j<column; j++)
+          {
+            mat_squared[i][j] = mat[i][j];
+          }
+      }
+}
+int get_max(int a, int b)
+{
+  if(a>b)
+    return a;
+  else
+    return b;
+}

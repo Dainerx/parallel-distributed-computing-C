@@ -56,7 +56,25 @@ int main(int argc, char *argv[])
 
   // Multiplication séquentielle en réduisant le nombre de multiplication.
   fill_mat(mat_C, ci.lines_a, ci.columns_b); // Réinitialissation des lignes de cache.
-  cpu_time_used_seq = strassen_mult(mat_A, mat_B, mat_C);
+  //cpu_time_used_seq = strassen_mult(mat_A, mat_B, mat_C);
+
+  int m = get_max( ci.lines_a, ci.columns_a);
+  int max = get_max(m, ci.columns_b);
+
+  // SI LES MATRICES NE SONT PAS CARRÉES
+ if(ci.lines_a != ci.columns_a && ci.lines_a != ci.columns_a)
+  {
+    int** mat_A_squared = malloc_mat(max, max);
+    int** mat_B_squared = malloc_mat(max, max);
+    int** mat_C_squared = malloc_mat(max, max);
+
+    make_square(mat_A_squared, mat_A, ci.lines_a, ci.columns_a, max);
+    make_square(mat_B_squared, mat_B, ci.lines_b, ci.columns_b,max);
+    cpu_time_used_seq = strassen_mult(mat_A_squared, mat_B_squared, mat_C_squared,mat_C, max);
+  }else{
+    cpu_time_used_seq = strassen_mult(mat_A, mat_B, mat_C, mat_C, ci.columns_a);
+  }
+
   metrics[1][0] = cpu_time_used_seq;
   metrics[1][1] = 1;
   metrics[1][2] = 1;

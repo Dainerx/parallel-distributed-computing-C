@@ -29,7 +29,7 @@ double sequential_mult(int **mat_A, int **mat_B, int **mat_C);
 // Takes the matrices to be computed as arguments.
 // Perform matrix multiplication sequentially using Strassen Algorithm.
 // Returns time taken to compute as double.
-double strassen_mult(int **mat_A, int **mat_B, int **mat_C);
+double strassen_mult(int **mat_A, int **mat_B, int **mat_C, int** mat_C_final,int n);
 
 // Takes number of threads and the matrices to be computed as arguments.
 // Perform matrix multiplication in parallel.
