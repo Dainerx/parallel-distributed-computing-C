@@ -89,20 +89,36 @@ void multiply_mats(int n, int **a, int **b, int **c)
         }
     }
 }
-void make_square(int** mat_squared, int** mat,int line, int column,int n)
+void make_square(int **mat_squared, int **mat, int line, int column, int n)
 {
-      for(int i =0; i<line; i++)
-      {
-          for(int j =0; j<column; j++)
-          {
+    for (int i = 0; i < line; i++)
+    {
+        for (int j = 0; j < column; j++)
+        {
             mat_squared[i][j] = mat[i][j];
-          }
-      }
+        }
+    }
 }
 int get_max(int a, int b)
 {
-  if(a>b)
-    return a;
-  else
-    return b;
+    if (a > b)
+        return a;
+    else
+        return b;
+}
+
+bool equal_mats(int lines, int columns, int **a, int **b)
+{
+    for (int i = 0; i < lines; i++)
+    {
+        for (int j = 0; j < columns; j++)
+        {
+            if (a[i][j] != b[i][j])
+            {
+                printf("Found no equal cell: (%d,%d) a(%d,%d)=%d ; b(%d,%d)=%d\n", i, j, i, j, a[i][j], i, j, b[i][j]);
+                return false;
+            }
+        }
+    }
+    return true;
 }

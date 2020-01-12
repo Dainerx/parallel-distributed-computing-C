@@ -41,17 +41,17 @@ double sequential_mult(int **mat_A, int **mat_B, int **mat_C)
     return cpu_time_used;
 }
 
-double strassen_mult(int **mat_A, int **mat_B, int **mat_C, int** mat_C_final,int n)
+double strassen_mult(int **mat_A, int **mat_B, int **mat_C, int **mat_C_final, int n)
 {
     double start, end, cpu_time_used;
     start = omp_get_wtime();
     strassen(n, mat_A, mat_B, mat_C);
-    for(int i=0; i<input.la; i++)
+    for (int i = 0; i < input.la; i++)
     {
-      for(int j=0; j<input.cb; j++)
-      {
-        mat_C_final[i][j] = mat_C[i][j];
-      }
+        for (int j = 0; j < input.cb; j++)
+        {
+            mat_C_final[i][j] = mat_C[i][j];
+        }
     }
     end = omp_get_wtime();
     cpu_time_used = (end - start);

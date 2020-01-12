@@ -20,6 +20,8 @@ void substract_mats(int n, int **a, int **b, int **c);
 
 void multiply_mats(int n, int **a, int **b, int **c);
 
-void make_square(int** mat_squared, int** mat,int line, int column,int n);
+void make_square(int **mat_squared, int **mat, int line, int column, int n);
 
 int get_max(int a, int b);
+
+bool equal_mats(int lines, int columns, int **a, int **b);
