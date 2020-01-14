@@ -78,12 +78,12 @@ void substract_mats(int n, int **a, int **b, int **c)
 
 void multiply_mats(int n, int **a, int **b, int **c)
 {
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < n; i++)
     {
-        for (int j = 0; j < 2; j++)
+        for (int j = 0; j < n; j++)
         {
             c[i][j] = 0;
-            for (int t = 0; t < 2; t++)
+            for (int t = 0; t < n; t++)
             {
                 c[i][j] = c[i][j] + a[i][t] * b[t][j];
             }
