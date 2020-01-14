@@ -29,7 +29,25 @@ void convertMat(int **matrixA, int **matrixB, int *a, int *b)
         }
     }
 }
-// Launch with four threads
+void get_res_line(int *res,int *receive_lineA,int *flatB)
+{
+  int k = 0;
+  int c = 0;
+  int t;
+  while(k < LINES_B*COLUMNS_B)
+  {
+    t = 0;
+    for(int i = 0; i<COLUMNS_A; i++)
+    {
+      t += receive_lineA[i] * flatB[i+k];
+    }
+    res[c] = t;
+    k += 3;
+    c +=1;
+  }
+}
+
+// Remarque :  le nombre de threads au lancement doit etre egal au nombre de lignes de la matrice A
 int main(int argc, char **argv)
 {
     const int root = 0;
@@ -43,6 +61,8 @@ int main(int argc, char **argv)
     srand(time(NULL)+rank);
     int **mat_A;
     int **mat_B;
+    int *flatA;
+    int* res_final;
 
     int *flatB = malloc((LINES_B * COLUMNS_B) * sizeof(int));
     if(rank == root)
@@ -57,7 +77,7 @@ int main(int argc, char **argv)
       printf ("mat B\n");
       display_mat(mat_B, LINES_B, COLUMNS_B);
       printf("\n\n");
-      int *flatA =  malloc((LINES_A * COLUMNS_A) * sizeof(int));
+      flatA =  malloc((LINES_A * COLUMNS_A) * sizeof(int));
       convertMat(mat_A, mat_B,flatA,flatB);
 
       printf ("mat B flated\n");
@@ -66,15 +86,58 @@ int main(int argc, char **argv)
         printf("%d\t",flatB[i] );
       }
       printf("\n\n");
+      printf ("mat A flated\n");
+      for(int i=0; i<LINES_A*COLUMNS_A; i++)
+      {
+        printf("%d\t",flatA [i] );
+      }
+      printf("\n\n");
+
+      res_final = malloc((LINES_A*COLUMNS_B)*sizeof(int));
     }
     // Envoie de la matrice B a tout le monde; B sera partagée
     MPI_Bcast(flatB,LINES_B*COLUMNS_B,MPI_INT,root,MPI_COMM_WORLD);
     if(rank != root)
     {
-      if(flatB)
-          printf("je suis %d et j'ai reçu %d %d %d\n", rank,flatB[0], flatB[1], flatB[2] );
+    //  if(flatB)
+        //  printf("je suis %d et j'ai reçu %d %d %d\n", rank,flatB[0], flatB[1], flatB[2] );
 
     }
+
+    // Chacun alloue un tableau de taille COLUMNS_A pour recevoir sa partie de la matrice A
+    // chacun reçoi une ligne de la matrice A
+    int* receive_lineA = (int *)malloc(COLUMNS_A*sizeof(int));
+    if(receive_lineA)
+    {
+      MPI_Scatter(flatA, COLUMNS_A, MPI_INT, receive_lineA, COLUMNS_A,MPI_INT, root, MPI_COMM_WORLD);
+      //printf("My rank is %d, I recieved %d %d %d\n", rank, receive_lineA[0], receive_lineA[1], receive_lineA[2]);
+    }
+
+    // Chacun dispose désormais de la matrice B en 1D (B est partagée) et une ligne de la matrice A
+    // Chacun doit avoir comme résultat une ligne de la matrice C
+    // Ensuite tout le monde envoie sa partie calculée au root (gather)
+
+    int* local_res = (int*) malloc(COLUMNS_B*sizeof(int));
+
+    // Chacun calcule la ligne de la matrice C
+    get_res_line(local_res,receive_lineA,flatB);
+
+  /*  for(int i = 0; i<COLUMNS_B; i++)
+    {
+      printf("%d\t",local_res[i]);
+    }
+    printf("\n");
+    */
+    MPI_Gather(local_res,COLUMNS_B , MPI_INT, res_final, COLUMNS_B, MPI_INT, root, MPI_COMM_WORLD );
+
+    if(rank == root)
+    {
+      for(int i =0; i<LINES_A*COLUMNS_B; i++)
+        {
+          printf("%d\t", res_final[i]);
+        }
+    }
+
     free(flatB);
     if(rank == root)
        {
