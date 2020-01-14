@@ -70,18 +70,15 @@ double parallel_mult(int num_threads, int **mat_A, int **mat_B, int **mat_C)
     int i, j, k, t, sum;
     omp_set_dynamic(0);
     omp_set_num_threads(num_threads);
-    //int chunk = columns_a / (omp_get_num_threads() * 4);
     start = omp_get_wtime();
-#pragma omp parallel for private(j, k) shared(mat_A, mat_B, mat_C)
+#pragma omp parallel for schedule(guided) collapse(2) private(i, j, k, t, sum) shared(mat_A, mat_B, mat_C)
     for (i = 0; i < lines_a; i++)
     {
         for (j = 0; j < columns_b; j++)
         {
             sum = 0;
-// A tester avec guided ça donne un bon RESULTAT
-// aussi avec static, auto ou tout simplement ne pas mettre de schedule
-#pragma omp parallel for schedule(guided) private(t) reduction(+ \
-                                                               : sum)
+            // A tester avec guided ça donne un bon RESULTAT
+            // aussi avec static, auto ou tout simplement ne pas mettre de schedule
             for (k = 0; k < columns_a; k++)
             {
                 t = (mat_A[i][k] * mat_B[k][j]);
@@ -147,7 +144,7 @@ double optimized_parallel_multiply(int num_threads, int **matrixA, int **matrixB
     omp_set_num_threads(num_threads);
 
 //Le but ici est de faire la multiplication des matrices avec des tableaux à une dimension
-#pragma omp parallel shared(matrixC) private(i, j, k, iOff, jOff, tot)
+#pragma omp parallel shared(matrixC) private(j, k, iOff, jOff, tot)
     {
 #pragma omp for schedule(static)
         for (i = 0; i < lines_a; i++)

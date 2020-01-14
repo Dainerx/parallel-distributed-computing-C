@@ -110,6 +110,7 @@ int get_max(int a, int b)
 
 bool equal_mats(int lines, int columns, int **a, int **b)
 {
+    bool correct = true;
     for (int i = 0; i < lines; i++)
     {
         for (int j = 0; j < columns; j++)
@@ -117,21 +118,21 @@ bool equal_mats(int lines, int columns, int **a, int **b)
             if (a[i][j] != b[i][j])
             {
                 printf("Found no equal cell: (%d,%d) a(%d,%d)=%d ; b(%d,%d)=%d\n", i, j, i, j, a[i][j], i, j, b[i][j]);
-                return false;
+                correct = false;
             }
         }
     }
-    return true;
+    return correct;
 }
 
-int get_puiss2(int n)
+int get_power_2(int n)
 {
-  int i = 0;
-  int t = 0;
-  while(t < n)
-  {
-    t = pow(2,i);
-    i++;
-  }
-  return (pow(2,i-1));
+    int i = 0;
+    int t = 0;
+    while (t < n)
+    {
+        t = pow(2, i);
+        i++;
+    }
+    return (pow(2, i - 1));
 }
