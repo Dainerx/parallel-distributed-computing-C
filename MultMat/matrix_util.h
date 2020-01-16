@@ -27,3 +27,11 @@ int get_max(int a, int b);
 bool equal_mats(int lines, int columns, int **a, int **b);
 
 int get_power_2(int n);
+
+int *malloc_flat_mat(int n);
+
+void flat_mat(int n, int *m, int **mat);
+
+void add_flat_mats(int n, int *a, int *b, int *c);
+
+void substract_flat_mats(int n, int *a, int *b, int *c);

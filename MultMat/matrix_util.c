@@ -136,3 +136,29 @@ int get_power_2(int n)
     }
     return (pow(2, i - 1));
 }
+
+int *malloc_flat_mat(int n)
+{
+    int *mat = (int *)malloc((n * n) * sizeof(int));
+    return mat;
+}
+
+void flat_mat(int n, int *m, int **mat)
+{
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+            m[i * n + j] = mat[i][j];
+}
+void add_flat_mats(int n, int *a, int *b, int *c)
+{
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+            c[i * n + j] = a[i * n + j] + b[i * n + j];
+}
+
+void substract_flat_mats(int n, int *a, int *b, int *c)
+{
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+            c[i * n + j] = a[i * n + j] - b[i * n + j];
+}

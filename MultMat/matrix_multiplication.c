@@ -62,31 +62,23 @@ int main(int argc, char *argv[])
   // Multiplication séquentielle en réduisant le nombre de multiplication.
   // SI LES MATRICES NE SONT PAS CARRÉES
   double cpu_time_used_strassen;
-  if (ci.lines_a != ci.columns_a && ci.lines_a != ci.columns_a)
-  {
-    int max = get_max(get_max(ci.lines_a, ci.columns_a), ci.columns_b);
-    max = get_power_2(max);
-    int **mat_A_squared = malloc_mat(max, max);
-    int **mat_B_squared = malloc_mat(max, max);
-    int **mat_C_squared = malloc_mat(max, max);
+  int max = get_max(get_max(ci.lines_a, ci.columns_a), ci.columns_b);
+  max = get_power_2(max);
+  int **mat_A_squared = malloc_mat(max, max);
+  int **mat_B_squared = malloc_mat(max, max);
+  int **mat_C_squared = malloc_mat(max, max);
 
-    make_square(mat_A_squared, mat_A, ci.lines_a, ci.columns_a, max);
-    make_square(mat_B_squared, mat_B, ci.lines_b, ci.columns_b, max);
-    cpu_time_used_strassen = strassen_mult(mat_A_squared, mat_B_squared, mat_C_squared, mat_C_Other, max);
-
-    free_mat(mat_A_squared, max);
-    free_mat(mat_B_squared, max);
-    free_mat(mat_C_squared, max);
-  }
-  else
-  {
-    cpu_time_used_strassen = strassen_mult(mat_A, mat_B, mat_C_Other, mat_C_Other, ci.columns_a);
-  }
-
+  make_square(mat_A_squared, mat_A, ci.lines_a, ci.columns_a, max);
+  make_square(mat_B_squared, mat_B, ci.lines_b, ci.columns_b, max);
+  cpu_time_used_strassen = strassen_mult_flat(mat_A_squared, mat_B_squared, mat_C_squared, mat_C_Other, max);
   if (equal_mats(ci.lines_a, ci.columns_b, mat_C_Seq, mat_C_Other) == false)
   {
     printf("Multiplication séquentielle en réduisant le nombre de multiplication has produced a wrong result.\n");
   }
+  free_mat(mat_A_squared, max);
+  free_mat(mat_B_squared, max);
+  free_mat(mat_C_squared, max);
+
   metrics[1][0] = cpu_time_used_strassen;
   metrics[1][1] = 1;
   metrics[1][2] = 1;

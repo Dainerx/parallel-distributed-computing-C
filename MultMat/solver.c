@@ -2,6 +2,7 @@
 #include <omp.h>
 #include "solver.h"
 #include "strassen.h"
+#include "matrix_util.h"
 
 struct Input input;
 
@@ -55,6 +56,29 @@ double strassen_mult(int **mat_A, int **mat_B, int **mat_C, int **mat_C_final, i
     }
     end = omp_get_wtime();
     cpu_time_used = (end - start);
+    return cpu_time_used;
+}
+
+double strassen_mult_flat(int **mat_A, int **mat_B, int **mat_C, int **mat_C_final, int n)
+{
+    int *a = (int *)malloc((n * n) * sizeof(int));
+    int *b = (int *)malloc((n * n) * sizeof(int));
+    int *c = (int *)malloc((n * n) * sizeof(int));
+    flat_mat(n, a, mat_A);
+    flat_mat(n, b, mat_B);
+    flat_mat(n, c, mat_C);
+
+    double start = omp_get_wtime();
+    strassen_flat(n, a, b, c);
+    double end = omp_get_wtime();
+    for (int i = 0; i < input.la; i++)
+    {
+        for (int j = 0; j < input.cb; j++)
+        {
+            mat_C_final[i][j] = c[i * n + j];
+        }
+    }
+    double cpu_time_used = (end - start);
     return cpu_time_used;
 }
 
