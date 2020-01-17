@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
   {
     return 1;
   }
-
+  print_colored(2, "    OK: Input valid.");
   printf("\n    A: (%d,%d)\n    B: (%d,%d)\n", ci.lines_a, ci.columns_a, ci.lines_b, ci.columns_b);
   int num_threads = ci.num_threads;
   printf("    Threads number: %d \n", num_threads);
@@ -111,6 +111,8 @@ int main(int argc, char *argv[])
   metrics[3][2] = efficiency(cpu_time_used_seq, cpu_time_used_parallel, num_threads);
   metrics[3][3] = cost(cpu_time_used_parallel, num_threads);
 
+  // Tout est bon, faut afficher les metrics.
+  print_colored(2, "\n    Finished computing.\n    Metrics:\n");
   // Afficher les metriques pour chaque solveur
   print_metrics(labels, metrics);
 

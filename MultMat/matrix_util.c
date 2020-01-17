@@ -11,6 +11,7 @@ int **malloc_mat(int lines, int colums)
         mat[i] = (int *)malloc(colums * sizeof(int));
     return mat;
 }
+
 float **malloc_matf(int lines, int colums)
 {
     float **mat = (float **)malloc(lines * sizeof(float *));
@@ -108,23 +109,6 @@ int get_max(int a, int b)
         return b;
 }
 
-bool equal_mats(int lines, int columns, int **a, int **b)
-{
-    bool correct = true;
-    for (int i = 0; i < lines; i++)
-    {
-        for (int j = 0; j < columns; j++)
-        {
-            if (a[i][j] != b[i][j])
-            {
-                printf("Found no equal cell: (%d,%d) a(%d,%d)=%d ; b(%d,%d)=%d\n", i, j, i, j, a[i][j], i, j, b[i][j]);
-                correct = false;
-            }
-        }
-    }
-    return correct;
-}
-
 int get_power_2(int n)
 {
     int i = 0;
@@ -161,4 +145,21 @@ void substract_flat_mats(int n, int *a, int *b, int *c)
     for (int i = 0; i < n; i++)
         for (int j = 0; j < n; j++)
             c[i * n + j] = a[i * n + j] - b[i * n + j];
+}
+
+bool equal_mats(int lines, int columns, int **a, int **b)
+{
+    bool correct = true;
+    for (int i = 0; i < lines; i++)
+    {
+        for (int j = 0; j < columns; j++)
+        {
+            if (a[i][j] != b[i][j])
+            {
+                printf("Found no equal cell: (%d,%d) a(%d,%d)=%d ; b(%d,%d)=%d\n", i, j, i, j, a[i][j], i, j, b[i][j]);
+                correct = false;
+            }
+        }
+    }
+    return correct;
 }

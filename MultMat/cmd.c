@@ -17,8 +17,8 @@ int print_colored(int color, const char *format, ...)
     case 1:                   //rouge
         printf("\033[0;31m"); // Définir la couleur rouge
         break;
-    case 2:
-        printf("\033[0;31m"); // Définir la couleur vert
+    case 2:                   //vert
+        printf("\033[0;32m"); // Définir la couleur vert
         break;
     default:
         printf("\033[0m"); // Remettre le texte à la couleur par défaut

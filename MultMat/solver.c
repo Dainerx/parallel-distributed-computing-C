@@ -42,6 +42,11 @@ double sequential_mult(int **mat_A, int **mat_B, int **mat_C)
     return cpu_time_used;
 }
 
+/**
+ * C'est une implémentation de algorithme Strassenqui a moins de complexity run time. 
+ * Cet algorithme reduit le nombre de multiplications faites, mais trop cher lorsque il s'agit
+ * de allocations mémoires et l'utilisation de processeur du coup pas forcement qu'il soit plus rapide. 
+ * */
 double strassen_mult(int **mat_A, int **mat_B, int **mat_C, int **mat_C_final, int n)
 {
     double start, end, cpu_time_used;
@@ -59,6 +64,12 @@ double strassen_mult(int **mat_A, int **mat_B, int **mat_C, int **mat_C_final, i
     return cpu_time_used;
 }
 
+/**
+ * C'est une implémentation de Strassen qui transforme les matrices à
+ * des tableaux avant de effectuer tout le calcul.
+ * La complexité run time c'est la même avec strassen_mult, mais les allocations de mémoire 
+ * sont beaucoup plus moins. 
+ * */
 double strassen_mult_flat(int **mat_A, int **mat_B, int **mat_C, int **mat_C_final, int n)
 {
     int *a = (int *)malloc((n * n) * sizeof(int));

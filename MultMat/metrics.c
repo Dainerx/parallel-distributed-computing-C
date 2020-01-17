@@ -20,7 +20,6 @@ double cost(double parallel_time, int num_threads)
     return num_threads * parallel_time;
 }
 
-// vars as sizes!!!!
 // Affichage des métriques
 void print_metrics(const char **labels, float **metrics)
 {
