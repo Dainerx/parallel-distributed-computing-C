@@ -43,9 +43,9 @@ double sequential_mult(int **mat_A, int **mat_B, int **mat_C)
 }
 
 /**
- * C'est une implémentation de algorithme Strassenqui a moins de complexity run time. 
+ * C'est une implémentation de algorithme Strassenqui a moins de complexity run time.
  * Cet algorithme reduit le nombre de multiplications faites, mais trop cher lorsque il s'agit
- * de allocations mémoires et l'utilisation de processeur du coup pas forcement qu'il soit plus rapide. 
+ * de allocations mémoires et l'utilisation de processeur du coup pas forcement qu'il soit plus rapide.
  * */
 double strassen_mult(int **mat_A, int **mat_B, int **mat_C, int **mat_C_final, int n)
 {
@@ -67,8 +67,8 @@ double strassen_mult(int **mat_A, int **mat_B, int **mat_C, int **mat_C_final, i
 /**
  * C'est une implémentation de Strassen qui transforme les matrices à
  * des tableaux avant de effectuer tout le calcul.
- * La complexité run time c'est la même avec strassen_mult, mais les allocations de mémoire 
- * sont beaucoup plus moins. 
+ * La complexité run time c'est la même avec strassen_mult, mais les allocations de mémoire
+ * sont beaucoup plus moins.
  * */
 double strassen_mult_flat(int **mat_A, int **mat_B, int **mat_C, int **mat_C_final, int n)
 {
@@ -106,7 +106,7 @@ double parallel_mult(int num_threads, int **mat_A, int **mat_B, int **mat_C)
     omp_set_dynamic(0);
     omp_set_num_threads(num_threads);
     start = omp_get_wtime();
-#pragma omp parallel for schedule(guided) collapse(2) private(j, k, t, sum) shared(mat_A, mat_B, mat_C)
+#pragma omp parallel for schedule(guided) collapse(2) private(i, j, k, t, sum) shared(mat_A, mat_B, mat_C)
     for (i = 0; i < lines_a; i++)
     {
         for (j = 0; j < columns_b; j++)
