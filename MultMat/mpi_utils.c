@@ -80,13 +80,19 @@ int check_flag_value(int rank, char *flag, char *s)
 }
 
 // Retourner vrai si l'input est correct, faux sinon.
-bool check_input(int rank, struct CmdInput input)
+bool check_input(int rank, struct CmdInputDistributed input)
 {
     const char *ERROR_DIMENSION_INTEGRITY = "ERROR: LINES_B # COLUMNS_A. A: %d x %d, B: %d x %d.\n";
     const char *ERROR_DIMENSION_MAX = "ERROR: LINES * COLUMNS > 10e6. A: %d x %d, B: %d x %d.\n";
+    const char *ERROR_LINESA_MACHINES = "ERROR: LINES_A * Number of machines. A: %d x %d, B: %d x %d.\n";
 
     if (input.lines_a == -1 || input.lines_b == -1 || input.columns_a == -1 || input.columns_b == -1 || input.num_threads == -1)
     {
+        return false;
+    }
+    if (input.num_machines != input.lines_a)
+    {
+        print_colored(rank, 1, ERROR_LINESA_MACHINES, input.lines_a, input.columns_a, input.lines_b, input.columns_b);
         return false;
     }
     if (input.columns_a != input.lines_b)
@@ -105,9 +111,9 @@ bool check_input(int rank, struct CmdInput input)
 
 // Lire tous les valeurs des arguments de la ligne de commande
 // préparer l'input et retourner une instance de CmdInput.
-struct CmdInput read_input(int rank, int argc, char *argv[])
+struct CmdInputDistributed read_input(int rank, int world_size, int argc, char *argv[])
 {
-    struct CmdInput i = {-1, -1, -1, -1, -1};
+    struct CmdInputDistributed i = {-1, -1, -1, -1, -1, -1};
     char *avalue = NULL;
     char *bvalue = NULL;
     char *cvalue = NULL;
@@ -141,6 +147,7 @@ struct CmdInput read_input(int rank, int argc, char *argv[])
         }
     }
 
+    i.num_machines = world_size;
     i.lines_a = check_flag_value(rank, "a", avalue);
     i.columns_a = check_flag_value(rank, "b", bvalue);
     i.lines_b = check_flag_value(rank, "c", cvalue);

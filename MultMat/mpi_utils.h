@@ -1,7 +1,8 @@
 #include <stdbool.h>
 #define MAX_DIMENSION 10e6
-struct CmdInput
+struct CmdInputDistributed
 {
+    int num_machines;
     int num_threads;
     int lines_a;
     int columns_a;
@@ -23,9 +24,9 @@ int toint(char *s);
  * Takes as argument CmdInput, checks the input againt all the necessary tests and returns a boolean.
  * Returns true if the input is correct, false else.
  */
-bool check_input(int rank, struct CmdInput input);
+bool check_input(int rank, struct CmdInputDistributed input);
 
 /**
  * Read input from command line, read values of all flags
  */
-struct CmdInput read_input(int rank, int argc, char *argv[]);
+struct CmdInputDistributed read_input(int rank, int world_size, int argc, char *argv[]);
