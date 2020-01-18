@@ -6,7 +6,7 @@
 #define LINES_A 3000
 #define COLUMNS_A 3000
 #define LINES_B 3000
-#define COLUMNS_B 3000
+#define COLUMNS_B 300
 
 #include "matrix_util.h"
 
@@ -59,7 +59,6 @@ void display_linear_mat(int *mat, int lines, int columns)
     printf("%d\t", mat[i]);
   }
 }
-// Remarque :  le nombre de threads au lancement doit etre egal au nombre de lignes de la matrice A
 int main(int argc, char **argv)
 {
     const int root = 0;
@@ -81,12 +80,14 @@ int main(int argc, char **argv)
     int *flatB = malloc((LINES_B * COLUMNS_B) * sizeof(int));
     if(rank == root)
     {
-      start= MPI_Wtime();
+
       mat_A = malloc_mat(LINES_A, COLUMNS_A);
       mat_B = malloc_mat(LINES_B, COLUMNS_B);
+
       fill_mat(mat_A, LINES_A, COLUMNS_A);
       fill_mat(mat_B, LINES_B, COLUMNS_B);
 
+      start= MPI_Wtime();
       flatA =  malloc((LINES_A * COLUMNS_A) * sizeof(int));
       convertMat(mat_A, mat_B,flatA,flatB);
 
