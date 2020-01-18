@@ -12,7 +12,7 @@
 #include "matrix_util.h"
 
 // Remplissage d'une matrice avec des valeurs aléatoires
-void fill_mat_parralel(int **mat, int lines, int colums)
+void fill_mat_parallel(int **mat, int lines, int colums)
 {
   int j;
 #pragma omp parallel for shared(mat) private(j)
@@ -25,7 +25,7 @@ void fill_mat_parralel(int **mat, int lines, int colums)
   }
 }
 
-void convertMat_parralel(int **matrixA, int **matrixB, int *a, int *b)
+void convertMat_parallel(int **matrixA, int **matrixB, int *a, int *b)
 {
   int j;
 #pragma omp paralel
@@ -50,7 +50,7 @@ void convertMat_parralel(int **matrixA, int **matrixB, int *a, int *b)
   }
 }
 
-void get_res_line_parralel(int *res, int *receive_lineA, int *flatB)
+void get_res_line_parallel(int *res, int *receive_lineA, int *flatB)
 {
   int c = 0;
   int t;
@@ -66,7 +66,7 @@ void get_res_line_parralel(int *res, int *receive_lineA, int *flatB)
     c += 1;
   }
 }
-void display_linear_mat_parralel(int *mat, int lines, int columns)
+void display_linear_mat_parallel(int *mat, int lines, int columns)
 {
   for (int i = 0; i < lines * columns; i++)
   {
@@ -99,12 +99,12 @@ int main(int argc, char **argv)
   {
     mat_A = malloc_mat(LINES_A, COLUMNS_A);
     mat_B = malloc_mat(LINES_B, COLUMNS_B);
-    fill_mat_parralel(mat_A, LINES_A, COLUMNS_A);
-    fill_mat_parralel(mat_B, LINES_B, COLUMNS_B);
+    fill_mat_parallel(mat_A, LINES_A, COLUMNS_A);
+    fill_mat_parallel(mat_B, LINES_B, COLUMNS_B);
 
     start = MPI_Wtime();
     flatA = malloc((LINES_A * COLUMNS_A) * sizeof(int));
-    convertMat_parralel(mat_A, mat_B, flatA, flatB);
+    convertMat_parallel(mat_A, mat_B, flatA, flatB);
 
     // Le root va allouer la taille mémoire pour contenir le résultat de la multiplication
     res_final = malloc((LINES_A * COLUMNS_B) * sizeof(int));
@@ -127,7 +127,7 @@ int main(int argc, char **argv)
   int *local_res = (int *)malloc(COLUMNS_B * sizeof(int));
 
   // Chacun calcule la ligne de la matrice C
-  get_res_line_parralel(local_res, receive_lineA, flatB);
+  get_res_line_parallel(local_res, receive_lineA, flatB);
 
   MPI_Gather(local_res, COLUMNS_B, MPI_INT, res_final, COLUMNS_B, MPI_INT, root, MPI_COMM_WORLD);
 
