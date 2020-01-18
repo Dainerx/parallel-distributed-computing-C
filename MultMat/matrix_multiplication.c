@@ -9,33 +9,27 @@
 #include "solver.h"
 #include "metrics.h"
 #include "cmd.h"
-#include <mpi.h>
 #include "strassen.h"
 
 int main(int argc, char *argv[])
 {
-  const int root = 0;
-  int rank, world_size;
-  MPI_Init(&argc, &argv);
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
   // Si c'est le root; on va executer tous les solvers qui ne sont pas distriubés
-  struct CmdInput ci = read_input(rank, argc, argv);
+  struct CmdInput ci = read_input(argc, argv);
   /*
       Vérifier la syntaxe ainsi que le contenu de la ligne de commande et afficher un message d'erreur en cas d'erreur
       exemple: si un flag n'a pas été renseigné ou les valeurs sont négatives ou le nombre de colonnes de la matrice A
       est different du nombre de lignes de la matrice B, un message d'erreur personnalisé est affiché
       La commande est: -a 700 -b 900 -c 900 -d 600 -n 25
     */
-  if (check_input(rank, ci) == false)
+  if (check_input(ci) == false)
   {
     return 1;
   }
-  print_colored(rank, 2, "    OK: Input valid.");
-  print_colored(rank, 0, "\n    A: (%d,%d)\n    B: (%d,%d)\n", ci.lines_a, ci.columns_a, ci.lines_b, ci.columns_b);
+  print_colored(2, "    OK: Input valid.");
+  print_colored(0, "\n    A: (%d,%d)\n    B: (%d,%d)\n", ci.lines_a, ci.columns_a, ci.lines_b, ci.columns_b);
   int num_threads = ci.num_threads;
-  print_colored(rank, 0, "    Threads number: %d \n", num_threads);
+  print_colored(0, "    Threads number: %d \n", num_threads);
 
   // Allocation des matrice A, B et C
   int **mat_A = malloc_mat(ci.lines_a, ci.columns_a);
@@ -81,7 +75,7 @@ int main(int argc, char *argv[])
   cpu_time_used_strassen = strassen_mult_flat(mat_A_squared, mat_B_squared, mat_C_squared, mat_C_Other, max);
   if (equal_mats(ci.lines_a, ci.columns_b, mat_C_Seq, mat_C_Other) == false)
   {
-    print_colored(rank, 1, "Multiplication séquentielle en réduisant le nombre de multiplication has produced a wrong result.\n");
+    print_colored(1, "Multiplication séquentielle en réduisant le nombre de multiplication has produced a wrong result.\n");
   }
   free_mat(mat_A_squared, max);
   free_mat(mat_B_squared, max);
@@ -97,7 +91,7 @@ int main(int argc, char *argv[])
   double cpu_time_used_parallel = parallel_mult(num_threads, mat_A, mat_B, mat_C_Other);
   if (equal_mats(ci.lines_a, ci.columns_b, mat_C_Seq, mat_C_Other) == false)
   {
-    print_colored(rank, 1, "Multiplication en parallèle version naive has produced a wrong result.\n");
+    print_colored(1, "Multiplication en parallèle version naive has produced a wrong result.\n");
   }
   // Mettre les résultats des metriques pour le calcul en parallèle version naive dans la matrice metrics
   metrics[2][0] = cpu_time_used_parallel;
@@ -110,7 +104,7 @@ int main(int argc, char *argv[])
   cpu_time_used_parallel = optimized_parallel_multiply(num_threads, mat_A, mat_B, mat_C_Other);
   if (equal_mats(ci.lines_a, ci.columns_b, mat_C_Seq, mat_C_Other) == false)
   {
-    print_colored(rank, 1, "Multiplication en parallèle version optimisée has produced a wrong result.\n");
+    print_colored(1, "Multiplication en parallèle version optimisée has produced a wrong result.\n");
   }
 
   // Mettre les résultats des metriques pour le calcul en parallèle version optimisée dans la matrice metrics
@@ -120,22 +114,15 @@ int main(int argc, char *argv[])
   metrics[3][3] = cost(cpu_time_used_parallel, num_threads);
   // Tout est bon, faut afficher les metrics.
   // Afficher les metriques pour chaque solveur
-  if (rank == root)
-  {
-    print_colored(rank, 2, "\n    Finished computing.\n    Metrics:\n");
-    print_metrics(labels, metrics);
-  }
 
-  // If this machine is not the root; wait for the root to give permission through the broadcast
-
-  // Go solve distru
-  mpi_solver(mat_A, mat_B, mat_C_Other);
+  print_colored(2, "\n    Finished computing.\n    Metrics:\n");
+  print_metrics(labels, metrics);
 
   // Désallocation des matrice pour éviter les fuites de mémoire.
   free_mat(mat_A, ci.lines_a);
   free_mat(mat_B, ci.lines_b);
   free_mat(mat_C_Seq, ci.lines_a);
   free_mat(mat_C_Other, ci.lines_a);
-  MPI_Finalize();
-  return EXIT_SUCCESS;
+  free_mat(metrics, 4);
+  return 0;
 }
