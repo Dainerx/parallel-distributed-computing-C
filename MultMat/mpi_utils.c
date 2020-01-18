@@ -148,3 +148,20 @@ struct CmdInput read_input(int rank, int argc, char *argv[])
     i.num_threads = check_flag_value(rank, "n", nvalue);
     return i;
 }
+
+bool result_correct(int lines, int columns, int *c, int **matrixC)
+{
+    bool correct = true;
+    for (int i = 0; i < lines; i++)
+    {
+        for (int j = 0; j < columns; j++)
+        {
+            if (c[i * lines + j] != matrixC[i][j])
+            {
+                printf("Found no equal cell: (%d,%d) distribué(%d,%d)=%d ; sequentiel(%d,%d)=%d\n", i, j, i, j, c[i * lines + j], i, j, matrixC[i][j]);
+                correct = false;
+            }
+        }
+    }
+    return correct;
+}

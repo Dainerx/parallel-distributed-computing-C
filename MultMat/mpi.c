@@ -64,7 +64,7 @@ void display_linear_mat(int *mat, int lines, int columns)
 int main(int argc, char **argv)
 {
   const int root = 0;
-  int rank, world_size, tag = 0;
+  int rank, world_size;
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
@@ -140,6 +140,10 @@ int main(int argc, char **argv)
   {
     double end = MPI_Wtime();
     double cpu_time_used_distributed = end - start;
+    if (!result_correct(ci.lines_a, ci.columns_b, flatC, mat_C_Seq))
+    {
+      print_colored(rank, 1, "Multiplication en distribué version séquentielle has produced a wrong result.\n");
+    }
     metrics[1][0] = cpu_time_used_distributed;
     metrics[1][1] = 1;
     metrics[1][2] = 1;
