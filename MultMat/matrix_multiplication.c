@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
   int **mat_C_Other = malloc_mat(ci.lines_a, ci.columns_b);
 
   const char *labels[4] = {"sequential native", "sequential strassen", "parallel native", "parallel optimized"};
-  float **metrics = malloc_matf(4, 4);
+  double metrics[4][4];
   srand(time(NULL));
 
   // Remlissage des matrices A et B
@@ -116,13 +116,12 @@ int main(int argc, char *argv[])
   // Afficher les metriques pour chaque solveur
 
   print_colored(2, "\n    Finished computing.\n    Metrics:\n");
-  print_metrics(labels, metrics);
+  print_metrics(labels, &metrics, 4);
 
   // Désallocation des matrice pour éviter les fuites de mémoire.
   free_mat(mat_A, ci.lines_a);
   free_mat(mat_B, ci.lines_b);
   free_mat(mat_C_Seq, ci.lines_a);
   free_mat(mat_C_Other, ci.lines_a);
-  free_mat(metrics, 4);
   return 0;
 }

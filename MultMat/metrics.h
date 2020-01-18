@@ -16,4 +16,4 @@ double cost(double parallel_time, int num_threads);
 /**
  * Display the metrics of all solvers.
  */
-void print_metrics(const char **labels, float **metrics);
+void print_metrics(const char **labels, double metrics[4][4], int n);
