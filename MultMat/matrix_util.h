@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#define MAX_VAL 10
-#define MIN_VAL 2
+#define MAX_VAL 5
+#define MIN_VAL 1
 
 /**
  * Allocate a matrix of integers taking as arguments lines and columns.
@@ -69,7 +69,7 @@ int *malloc_flat_mat(int n);
 /**
  * Transform a matrix to a 1D array.
  */
-void flat_mat(int n, int *m, int **mat);
+void flat_mat(int a, int b, int *m, int **mat);
 
 /**
  * Performs an addition of the two flat matrices a and b resulting into c.

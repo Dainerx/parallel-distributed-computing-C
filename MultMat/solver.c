@@ -1,6 +1,7 @@
 #include <time.h>
 #include <omp.h>
 #include "solver.h"
+#include <mpi.h>
 #include "strassen.h"
 #include "matrix_util.h"
 
@@ -75,9 +76,9 @@ double strassen_mult_flat(int **mat_A, int **mat_B, int **mat_C, int **mat_C_fin
     int *a = (int *)malloc((n * n) * sizeof(int));
     int *b = (int *)malloc((n * n) * sizeof(int));
     int *c = (int *)malloc((n * n) * sizeof(int));
-    flat_mat(n, a, mat_A);
-    flat_mat(n, b, mat_B);
-    flat_mat(n, c, mat_C);
+    flat_mat(n, n, a, mat_A);
+    flat_mat(n, n, b, mat_B);
+    flat_mat(n, n, c, mat_C);
 
     double start = omp_get_wtime();
     strassen_flat(n, a, b, c);
@@ -106,7 +107,7 @@ double parallel_mult(int num_threads, int **mat_A, int **mat_B, int **mat_C)
     omp_set_dynamic(0);
     omp_set_num_threads(num_threads);
     start = omp_get_wtime();
-#pragma omp parallel for schedule(guided) collapse(2) private(i, j, k, t, sum) shared(mat_A, mat_B, mat_C)
+#pragma omp parallel for schedule(guided) collapse(2) private(j, k, t, sum) shared(mat_A, mat_B, mat_C)
     for (i = 0; i < lines_a; i++)
     {
         for (j = 0; j < columns_b; j++)
@@ -201,4 +202,108 @@ double optimized_parallel_multiply(int num_threads, int **matrixA, int **matrixB
     end = omp_get_wtime();
     cpu_time_used = (end - start);
     return cpu_time_used;
+}
+
+void compute_local_c(int rank, int *lineA, int *flatB, int *local_c)
+{
+    int k = 0;
+    int c = 0;
+    int t;
+    while (k < input.lb * input.cb)
+    {
+        t = 0;
+        for (int i = 0; i < input.ca; i++)
+        {
+            t += lineA[i] * flatB[i + k];
+        }
+        local_c[c] = t;
+        k += input.lb;
+        c += 1;
+        //printf("%d\t", local_c[c]);
+    }
+    //printf("\n");
+}
+
+double mpi_solver(int **matrixA, int **matrixB, int **matrixC)
+{
+    const int root = 0;
+    int rank, world_size;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+
+    int *flatA = NULL;
+    int *flatB = (int *)malloc((input.lb * input.cb) * sizeof(int));
+    int *flatC = NULL;
+
+    double start;
+    if (rank == root)
+    {
+        start = MPI_Wtime();
+
+        // Le root va convertir les matrices à des tableaux
+        flatA = (int *)malloc((input.la * input.ca) * sizeof(int));
+        for (int i = 0; i < input.la; i++)
+        {
+            for (int j = 0; j < input.ca; j++)
+            {
+                flatA[i * input.ca + j] = matrixA[i][j];
+            }
+        }
+        for (int i = 0; i < input.lb; i++)
+        {
+            for (int j = 0; j < input.cb; j++)
+            {
+                flatB[j * input.lb + i] = matrixB[i][j];
+            }
+        }
+        // Le root va allouer la taille mémoire pour contenir le résultat de la multiplication
+        flatC = malloc((input.la * input.cb) * sizeof(int));
+    }
+
+    if (flatB != NULL)
+    {
+        //printf("Before brodcast rank =  %d, cb = %d, cb = %d\n", rank, input.cb, input.lb);
+        // Envoie de la matrice B a tout le monde; B sera partagée
+        MPI_Bcast(flatB, input.lb * input.cb, MPI_INT, root, MPI_COMM_WORLD);
+    }
+
+    // Chacun alloue un tableau de taille COLUMNS_A pour recevoir sa partie de la matrice A
+    // chacun reçoi une ligne de la matrice A
+    int *lineA_to_recieve = (int *)malloc(input.ca * sizeof(int));
+    if (lineA_to_recieve != NULL)
+    {
+        // this is wrong
+        MPI_Scatter(flatA, input.ca, MPI_INT, lineA_to_recieve, input.ca, MPI_INT, root, MPI_COMM_WORLD);
+    }
+
+    // Chacun dispose désormais de la matrice B en 1D (B est partagée) et une ligne de la matrice A
+    // Chacun doit avoir comme résultat une ligne de la matrice C
+    // Ensuite tout le monde envoie sa partie calculée au root (gather)
+    int *local_c_result = (int *)malloc(input.cb * sizeof(int));
+    // Chacun calcule la ligne de la matrice C
+    if (local_c_result != NULL)
+        compute_local_c(rank, lineA_to_recieve, flatB, local_c_result);
+
+    if (flatC != NULL)
+    {
+        printf("rank: %d\n", rank);
+        // Le root récupère le résultat de la muliplication
+        MPI_Gather(local_c_result, input.cb, MPI_INT, flatC, input.cb, MPI_INT, root, MPI_COMM_WORLD);
+        printf("rank: %d\n", rank);
+    }
+
+    free(local_c_result);
+
+    //final result in matrix_c
+    double time_used_mpi;
+    if (rank == root)
+    {
+        double end = MPI_Wtime();
+        free(flatA);
+        //free(flatB);
+        free(flatC);
+    }
+
+    MPI_Finalize();
+    return 0.0;
 }

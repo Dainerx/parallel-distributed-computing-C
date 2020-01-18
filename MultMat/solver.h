@@ -48,3 +48,5 @@ struct FlatArraysCouple convert(int num_threads, int **mat_A, int **mat_B);
 // Takes number of threads, flat arrays and matrix to result as arguments.
 // Returns the time taken to compute.
 double optimized_parallel_multiply(int num_threads, int **mat_A, int **mat_B, int **mat_C);
+
+double mpi_solver(int **matrixA, int **matrixB, int **matrixC);

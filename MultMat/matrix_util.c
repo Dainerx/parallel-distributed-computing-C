@@ -127,11 +127,11 @@ int *malloc_flat_mat(int n)
     return mat;
 }
 
-void flat_mat(int n, int *m, int **mat)
+void flat_mat(int a, int b, int *m, int **mat)
 {
-    for (int i = 0; i < n; i++)
-        for (int j = 0; j < n; j++)
-            m[i * n + j] = mat[i][j];
+    for (int i = 0; i < a; i++)
+        for (int j = 0; j < b; j++)
+            m[i * a + j] = mat[i][j];
 }
 void add_flat_mats(int n, int *a, int *b, int *c)
 {
