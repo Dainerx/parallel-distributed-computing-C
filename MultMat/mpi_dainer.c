@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 {
     const int root = 0;
     int rank, world_size;
-    int sum = 0, i, j;
+    int sum = 0, i, j, rc;
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
@@ -56,8 +56,8 @@ int main(int argc, char **argv)
     ci = read_input(rank, world_size, argc, argv);
     if (check_input(rank, ci) == false)
     {
-        MPI_Finalize();
-        return EXIT_SUCCESS;
+        MPI_Abort(MPI_COMM_WORLD, rc);
+        exit(1);
     }
     else
     {

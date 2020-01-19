@@ -90,11 +90,13 @@ bool check_input(int rank, struct CmdInputDistributed input)
     {
         return false;
     }
+    /*
     if (input.num_machines != input.lines_a)
     {
         print_colored(rank, 1, ERROR_LINESA_MACHINES, input.lines_a, input.columns_a, input.lines_b, input.columns_b);
         return false;
     }
+    */
     if (input.columns_a != input.lines_b)
     {
         print_colored(rank, 1, ERROR_DIMENSION_INTEGRITY, input.lines_a, input.columns_a, input.lines_b, input.columns_b);
