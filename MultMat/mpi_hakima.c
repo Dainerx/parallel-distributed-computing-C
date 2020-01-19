@@ -4,10 +4,10 @@
 #include <mpi.h>
 #include <omp.h>
 #include <time.h>
-#define LINES_A 402
-#define COLUMNS_A 1000
-#define LINES_B 1000
-#define COLUMNS_B 400
+#define LINES_A 100
+#define COLUMNS_A 60
+#define LINES_B 60
+#define COLUMNS_B 50
 
 #include "matrix_util.h"
 
@@ -109,6 +109,7 @@ void convertMat(int **matrixA, int **matrixB, int *a, int *b)
        }
    }
  }
+
 void get_res_lines_C(int *local_res,int *received_part_A,int *flatB, int nbr_linesA_received)
 {
   int **partA_unflatted = malloc_mat(nbr_linesA_received, COLUMNS_A);
@@ -121,8 +122,6 @@ void get_res_lines_C(int *local_res,int *received_part_A,int *flatB, int nbr_lin
 
   mult(partA_unflatted, B_unflatted, C, nbr_linesA_received, COLUMNS_A, LINES_B, COLUMNS_B);
 
-  // CONVERT C
-
   for( int i = 0; i < nbr_linesA_received; i++)
   {
       for (int j = 0; j < COLUMNS_B; j++)
@@ -130,6 +129,9 @@ void get_res_lines_C(int *local_res,int *received_part_A,int *flatB, int nbr_lin
           local_res[i * COLUMNS_B + j] = C[i][j];
       }
   }
+  free_mat(partA_unflatted, nbr_linesA_received);
+  free_mat(B_unflatted,LINES_B );
+  free_mat(C,nbr_linesA_received );
 }
 
 void display_linear_mat(int *mat, int lines, int columns)
@@ -143,7 +145,6 @@ void display_linear_mat(int *mat, int lines, int columns)
     printf("%d\t", mat[i]);
   }
 }
-// Remarque :  le nombre de threads au lancement doit etre egal au nombre de lignes de la matrice A
 int main(int argc, char **argv)
 {
     const int root = 0;
@@ -167,7 +168,7 @@ int main(int argc, char **argv)
     }
     if((LINES_A * COLUMNS_A / world_size) % COLUMNS_A != 0)
     {
-      printf(" lingesA*colunnesA/nombre de machines doit etre divisible sur colonnesA\n");
+      printf(" lingesA * colunnesA /nombre de machines doit etre divisible sur colonnesA\n");
       return -2;
     }
     int *flatB = malloc((LINES_B * COLUMNS_B) * sizeof(int));
@@ -179,21 +180,8 @@ int main(int argc, char **argv)
 
       fill_mat(mat_A, LINES_A, COLUMNS_A);
       fill_mat(mat_B, LINES_B, COLUMNS_B);
-      //fill_mat(mat_C, LINES_A, COLUMNS_B);
 
-    /*  printf("mat A\n");
-      display_mat(mat_A, LINES_A, COLUMNS_A);
-      printf("\n\n");
-
-      printf("mat B\n");
-      display_mat(mat_B, LINES_B, COLUMNS_B);
-      printf("\n\n");
-*/
       int time_seq = sequential_mult(mat_A, mat_B, mat_C);
-    /*  printf("mat C\n");
-      display_mat(mat_C, LINES_A, COLUMNS_B);
-      printf("\n\n");*/
-
       start= MPI_Wtime();
       flatA =  malloc((LINES_A * COLUMNS_A) * sizeof(int));
       convertMat(mat_A, mat_B,flatA,flatB);
@@ -203,41 +191,32 @@ int main(int argc, char **argv)
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
-    //printf("barrier %d\n", MPI_COMM_WORLD);
+
     // Envoie de la matrice B a tout le monde; B sera partagée
     MPI_Bcast(flatB,LINES_B*COLUMNS_B,MPI_INT,root,MPI_COMM_WORLD);
 
-    // Chacun alloue un tableau de taille COLUMNS_A pour recevoir sa partie de la matrice A
-    // chacun reçoi une ligne de la matrice A
     int length_revceived_A = COLUMNS_A*LINES_A / world_size;
 
+    // Chacun alloue un tableau de taille COLUMNS_A*LINES_A / world_size pour recevoir sa partie de la matrice A
     int* received_part_A = (int *)malloc(length_revceived_A *sizeof(int));
+
+    // Le root envoie à toutes les machines y compris lui sa part de la matrice A
     if(received_part_A)
     {
       MPI_Scatter(flatA,length_revceived_A, MPI_INT, received_part_A, length_revceived_A, MPI_INT, root, MPI_COMM_WORLD);
     }
     int nbr_linesA_received = length_revceived_A / COLUMNS_A;
 
-  /*  printf("je suis %d J'AI recu\n", rank);
-    for(int i = 0; i<length_revceived_A; i++)
-    {
-      printf("%d\t", received_part_A[i]);
-    }
-    printf("\n");
-    */
-    // Chacun dispose désormais de la matrice B en 1D (B est partagée) et une ligne de la matrice A
-    // Chacun doit avoir comme résultat une ligne de la matrice C
+    // Chacun dispose désormais de la matrice B en 1D (B est partagée) et un nombre x de lignes de la matrice A
+    // Chacun doit avoir comme résultat x lignes de la matrice C
     // Ensuite tout le monde envoie sa partie calculée au root (gather)
-
-
     int* local_res = (int*) malloc(nbr_linesA_received*COLUMNS_B*sizeof(int));
 
-    // Chacun calcule la ligne de la matrice C
-  //  get_res_line(local_res,receive_lineA,flatB);
+    // Chacun calcule x lignes de la matrice C
     get_res_lines_C(local_res,received_part_A,flatB, nbr_linesA_received);
 
-      //printf("\n");
-    //}
+    // Tout le monde envoie sa partie calculée au root (gather)
+    //Le root rencoi le résultat de toutes les machines
     MPI_Gather(local_res,nbr_linesA_received*COLUMNS_B , MPI_INT, res_final, nbr_linesA_received*COLUMNS_B, MPI_INT, root, MPI_COMM_WORLD );
 
     MPI_Barrier(MPI_COMM_WORLD);
@@ -257,7 +236,6 @@ int main(int argc, char **argv)
       else{
         printf("bravo \n");
       }
-      //display_linear_mat(res_final,LINES_A,COLUMNS_B);
     }
 
     free(flatB);
