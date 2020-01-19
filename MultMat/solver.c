@@ -106,14 +106,12 @@ double parallel_mult(int num_threads, int **mat_A, int **mat_B, int **mat_C)
     omp_set_dynamic(0);
     omp_set_num_threads(num_threads);
     start = omp_get_wtime();
-#pragma omp parallel for schedule(guided) collapse(2) private(i, j, k, t, sum) shared(mat_A, mat_B, mat_C)
+#pragma omp parallel for schedule(guided) collapse(2) private(j, k, t, sum) shared(mat_A, mat_B, mat_C)
     for (i = 0; i < lines_a; i++)
     {
         for (j = 0; j < columns_b; j++)
         {
             sum = 0;
-            // A tester avec guided ça donne un bon RESULTAT
-            // aussi avec static, auto ou tout simplement ne pas mettre de schedule
             for (k = 0; k < columns_a; k++)
             {
                 t = (mat_A[i][k] * mat_B[k][j]);
