@@ -30,3 +30,5 @@ bool check_input(int rank, struct CmdInputDistributed input);
  * Read input from command line, read values of all flags
  */
 struct CmdInputDistributed read_input(int rank, int world_size, int argc, char *argv[]);
+
+bool result_correct(int lines, int columns, int *c, int **matrixC);

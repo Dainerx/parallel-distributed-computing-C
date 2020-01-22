@@ -84,19 +84,12 @@ bool check_input(int rank, struct CmdInputDistributed input)
 {
     const char *ERROR_DIMENSION_INTEGRITY = "ERROR: LINES_B # COLUMNS_A. A: %d x %d, B: %d x %d.\n";
     const char *ERROR_DIMENSION_MAX = "ERROR: LINES * COLUMNS > 10e6. A: %d x %d, B: %d x %d.\n";
-    const char *ERROR_LINESA_MACHINES = "ERROR: LINES_A * Number of machines. A: %d x %d, B: %d x %d.\n";
 
     if (input.lines_a == -1 || input.lines_b == -1 || input.columns_a == -1 || input.columns_b == -1 || input.num_threads == -1)
     {
         return false;
     }
-    /*
-    if (input.num_machines != input.lines_a)
-    {
-        print_colored(rank, 1, ERROR_LINESA_MACHINES, input.lines_a, input.columns_a, input.lines_b, input.columns_b);
-        return false;
-    }
-    */
+
     if (input.columns_a != input.lines_b)
     {
         print_colored(rank, 1, ERROR_DIMENSION_INTEGRITY, input.lines_a, input.columns_a, input.lines_b, input.columns_b);
@@ -165,7 +158,7 @@ bool result_correct(int lines, int columns, int *c, int **matrixC)
     {
         for (int j = 0; j < columns; j++)
         {
-            if (c[i * lines + j] != matrixC[i][j])
+            if (c[i * columns + j] != matrixC[i][j])
             {
                 printf("Found no equal cell: (%d,%d) distribué(%d,%d)=%d ; sequentiel(%d,%d)=%d\n", i, j, i, j, c[i * lines + j], i, j, matrixC[i][j]);
                 correct = false;

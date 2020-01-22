@@ -51,7 +51,7 @@ int main(int argc, char **argv)
 {
     double start_time_distributed;
     int rank, world_size;
-    int sum = 0, i, j, k, rc;
+    int i, j, k, rc = 0;
     MPI_Status status;
 
     MPI_Init(&argc, &argv);
