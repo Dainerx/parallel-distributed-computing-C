@@ -126,19 +126,6 @@ int main(int argc, char **argv)
 
         double computing_time = MPI_Wtime() - start_time_distributed;
 
-        // Print results
-        /*
-        printf("******************************************************\n");
-        printf("Result Matrix:\n");
-        for (i = 0; i < ci.lines_a; i++)
-        {
-            printf("\n");
-            for (j = 0; j < ci.columns_b; j++)
-                printf("%d   ", actual_C[i][j]);
-        }
-        printf("\n******************************************************\n");
-        printf("Done.\n");
-        */
         printf("%f,%f\n", multseq(mat_A, mat_B, expected_C, actual_C), computing_time);
     }
 
@@ -151,7 +138,8 @@ int main(int argc, char **argv)
         MPI_Recv(&mat_A, rows * ci.columns_a, MPI_INT, root, TAG_MASTER, MPI_COMM_WORLD, &status);
         MPI_Recv(&mat_B, ci.lines_b * ci.columns_b, MPI_INT, root, TAG_MASTER, MPI_COMM_WORLD, &status);
 
-        // Every worker's compute its part of matC.
+// Every worker's compute its part of matC.
+#pragma omp parallel for schedule(guided) private(i, j) shared(actual_C, mat_A, mat_B)
         for (k = 0; k < ci.columns_b; k++)
             for (i = 0; i < rows; i++)
             {
@@ -161,6 +149,7 @@ int main(int argc, char **argv)
                     actual_C[i][k] = actual_C[i][k] + mat_A[i][j] * mat_B[j][k];
                 }
             }
+
         MPI_Send(&offset, 1, MPI_INT, root, TAG_WORKER, MPI_COMM_WORLD);
         MPI_Send(&rows, 1, MPI_INT, root, TAG_WORKER, MPI_COMM_WORLD);
         MPI_Send(&actual_C, rows * ci.columns_b, MPI_INT, root, TAG_WORKER, MPI_COMM_WORLD);
