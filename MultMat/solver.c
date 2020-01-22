@@ -1,9 +1,12 @@
 #include <time.h>
 #include <omp.h>
 #include "solver.h"
+#include "strassen.h"
+#include "matrix_util.h"
 
 struct Input input;
 
+//Initialiser la structure input par le nombre de lignes et de colonnes des matrices A et B
 void init_solver(int la, int ca, int lb, int cb)
 {
     input.la = la;
@@ -11,14 +14,17 @@ void init_solver(int la, int ca, int lb, int cb)
     input.lb = lb;
     input.cb = cb;
 }
-
+/*
+  Version séquentielle de base
+  Multiplication séquentielle des matrices A et B, le résultal sera dans la matrice C
+*/
 double sequential_mult(int **mat_A, int **mat_B, int **mat_C)
 {
     int lines_a = input.la;
     int columns_a = input.ca, columns_b = input.cb;
     double start, end, cpu_time_used;
-    int sum;
     start = omp_get_wtime();
+    int sum;
     for (int i = 0; i < lines_a; i++)
     {
         for (int j = 0; j < columns_b; j++)
@@ -36,6 +42,61 @@ double sequential_mult(int **mat_A, int **mat_B, int **mat_C)
     return cpu_time_used;
 }
 
+/**
+ * C'est une implémentation de algorithme Strassenqui a moins de complexity run time.
+ * Cet algorithme reduit le nombre de multiplications faites, mais trop cher lorsque il s'agit
+ * de allocations mémoires et l'utilisation de processeur du coup pas forcement qu'il soit plus rapide.
+ * */
+double strassen_mult(int **mat_A, int **mat_B, int **mat_C, int **mat_C_final, int n)
+{
+    double start, end, cpu_time_used;
+    start = omp_get_wtime();
+    strassen(n, mat_A, mat_B, mat_C);
+    for (int i = 0; i < input.la; i++)
+    {
+        for (int j = 0; j < input.cb; j++)
+        {
+            mat_C_final[i][j] = mat_C[i][j];
+        }
+    }
+    end = omp_get_wtime();
+    cpu_time_used = (end - start);
+    return cpu_time_used;
+}
+
+/**
+ * C'est une implémentation de Strassen qui transforme les matrices à
+ * des tableaux avant de effectuer tout le calcul.
+ * La complexité run time c'est la même avec strassen_mult, mais les allocations de mémoire
+ * sont beaucoup plus moins.
+ * */
+double strassen_mult_flat(int **mat_A, int **mat_B, int **mat_C, int **mat_C_final, int n)
+{
+    int *a = (int *)malloc((n * n) * sizeof(int));
+    int *b = (int *)malloc((n * n) * sizeof(int));
+    int *c = (int *)malloc((n * n) * sizeof(int));
+    flat_mat(n, n, a, mat_A);
+    flat_mat(n, n, b, mat_B);
+    flat_mat(n, n, c, mat_C);
+
+    double start = omp_get_wtime();
+    strassen_flat(n, a, b, c);
+    double end = omp_get_wtime();
+    for (int i = 0; i < input.la; i++)
+    {
+        for (int j = 0; j < input.cb; j++)
+        {
+            mat_C_final[i][j] = c[i * n + j];
+        }
+    }
+    double cpu_time_used = (end - start);
+    return cpu_time_used;
+}
+
+/*
+  Version parallèlisée OMP
+  Multiplication en parallel version naive des matrices A et B
+*/
 double parallel_mult(int num_threads, int **mat_A, int **mat_B, int **mat_C)
 {
     int lines_a = input.la;
@@ -44,23 +105,15 @@ double parallel_mult(int num_threads, int **mat_A, int **mat_B, int **mat_C)
     int i, j, k, t, sum;
     omp_set_dynamic(0);
     omp_set_num_threads(num_threads);
-    int chunk = columns_a / (omp_get_num_threads() * 2);
     start = omp_get_wtime();
-/* IMPORTANT ICI VU QUE LA VALEUR DE CHUNK N EST PAS BONNE, ÇA DONNE LE MEME
-  RESULTAT SI ON NE MET PAS schedule(dynamic, chunk) */
-#pragma omp parallel for private(i, j, k) shared(mat_A, mat_B, mat_C)
+#pragma omp parallel for schedule(guided) collapse(2) private(j, k, t, sum) shared(mat_A, mat_B, mat_C)
     for (i = 0; i < lines_a; i++)
     {
-        //printf("le nombre de threads %d\n", omp_get_num_threads());
-        //#pragma omp parallel for
         for (j = 0; j < columns_b; j++)
         {
-            //printf("I am thread %d \n", omp_get_thread_num());
             sum = 0;
-            #pragma omp parallel for schedule(dynamic, chunk) private(t) reduction(+ : sum)
             for (k = 0; k < columns_a; k++)
             {
-                //printf("I am thread %d \n", omp_get_thread_num());
                 t = (mat_A[i][k] * mat_B[k][j]);
                 sum += t;
             }
@@ -72,6 +125,7 @@ double parallel_mult(int num_threads, int **mat_A, int **mat_B, int **mat_C)
     return cpu_time_used;
 }
 
+// Cette fonction renvoie une structure contenant deux tableaux à une dimension obtenus avec les données des matrices A et B
 struct FlatArraysCouple convert(int num_threads, int **matrixA, int **matrixB)
 {
     int lines_a = input.la, lines_b = input.lb;
@@ -99,23 +153,31 @@ struct FlatArraysCouple convert(int num_threads, int **matrixA, int **matrixB)
     return flat_array_couple;
 }
 
+/*
+  Version améliorée en parallèle avec une meilleure gestion du cache processeur
+  Multiplication en parallel version optimisée des matrices A et B, le résultat se trouve dans la matrice C
+*/
 double optimized_parallel_multiply(int num_threads, int **matrixA, int **matrixB, int **matrixC)
 {
     int lines_a = input.la, lines_b = input.lb;
     int columns_a = input.ca, columns_b = input.cb;
-    /*
-		Parallel multiply given input matrices using optimal methods and return resultant matrix
-	*/
+
     int i, j, k, iOff, jOff;
     int tot;
     double start, end, cpu_time_used;
-    /* Head */
+
     start = omp_get_wtime();
+    /*
+      Appel de la méthode "convert" qui va retourner une structure contenant deux champs a et b (tableaux en une dimensions),
+      qui contiennet les données des matrices A et B respectivement
+    */
     struct FlatArraysCouple flat_array_couple = convert(num_threads, matrixA, matrixB);
     int *flatA = flat_array_couple.a;
     int *flatB = flat_array_couple.b;
     omp_set_num_threads(num_threads);
-#pragma omp parallel shared(matrixC) private(i, j, k, iOff, jOff, tot) num_threads(40)
+
+//Le but ici est de faire la multiplication des matrices avec des tableaux à une dimension
+#pragma omp parallel shared(matrixC) private(j, k, iOff, jOff, tot)
     {
 #pragma omp for schedule(static)
         for (i = 0; i < lines_a; i++)
@@ -133,7 +195,7 @@ double optimized_parallel_multiply(int num_threads, int **matrixA, int **matrixB
             }
         }
     }
-    /* Tail */
+
     end = omp_get_wtime();
     cpu_time_used = (end - start);
     return cpu_time_used;
