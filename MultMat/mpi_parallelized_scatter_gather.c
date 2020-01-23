@@ -41,35 +41,6 @@ double mpi_mult_seq(int **mat_A, int **mat_B, int **mat_C)
   Cette fonction permet de convertir des matrices de deux dimensions en une dimension
   Elle prend en paramètre deux matrices A et B, La matrice A va être transformée en une matrice 1D présentée ligne après ligne
   Et la matrice B va être transformée en une matrice 1D présentée colonne après colonne
-
-*/
-
-void convertMat(int **matrixA, int **matrixB, int *a, int *b)
-{
-  int i;
-
-  for (i = 0; i < ci.lines_a; i++)
-  {
-    for (int j = 0; j < ci.columns_a; j++)
-    {
-      a[i * ci.columns_a + j] = matrixA[i][j];
-    }
-  }
-
-  for (int i = 0; i < ci.lines_b; i++)
-  {
-    for (int j = 0; j < ci.columns_b; j++)
-    {
-      b[j * ci.lines_b + i] = matrixB[i][j];
-    }
-  }
-}
-
-/*
-  Cette fonction permet de convertir des matrices de deux dimensions en une dimension
-  Elle prend en paramètre deux matrices A et B, La matrice A va être transformée en une matrice 1D présentée ligne après ligne
-  Et la matrice B va être transformée en une matrice 1D présentée colonne après colonne
-
 */
 void convertMat_parralel(int **matrixA, int **matrixB, int *a, int *b)
 {
